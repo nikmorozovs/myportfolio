@@ -33,6 +33,10 @@ The Sites `control-browser` capability is absent. Under its preview instructions
 
 ## Deployment
 
-The first [Actions run](https://github.com/nikmorozovs/myportfolio/actions/runs/39254959351) passed geometry tests, build, route checks and artifact upload. Deployment stopped at **Read Pages configuration** because this repository does not yet have Pages enabled. The GitHub repository API also reported `has_pages: false`.
+Live site: https://nikmorozovs.github.io/myportfolio/
 
-The owner needs the one-time **Settings → Pages → Source → GitHub Actions** selection, then a workflow rerun or another push. The connector supports source/workflow writes but exposes no Pages administration action. A successful deploy job is required before treating the target as live.
+The [successful Actions run](https://github.com/nikmorozovs/myportfolio/actions/runs/39256224108) for implementation commit `def80e111c2f566b3fc61e8aaee5835cc4bd9387` passed geometry tests, build, route checks, artifact upload and deployment. The repository now reports `has_pages: true` and uses GitHub Actions for publishing.
+
+The README includes the one-time Pages source selection for a future repository/fork. Runtime publication is now working; the browser acceptance limits above still apply.
+
+Live HTTP checks returned 200 for the home page, all four case directories, a case URL without a trailing slash (redirected correctly), both JavaScript modules, CSS and both local fonts. Modules were served as JavaScript and fonts as `font/woff`. An unknown route returned 404.

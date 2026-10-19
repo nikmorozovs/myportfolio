@@ -4,7 +4,7 @@ Business Analyst portfolio — Nikolajs Morozovs.
 
 Static, English-language site with a reversible scroll-controlled aircraft scene and four individually addressable case pages.
 
-Target URL: **https://nikmorozovs.github.io/myportfolio/** — treat this as live only after the deploy job succeeds.
+Live site: **https://nikmorozovs.github.io/myportfolio/**
 
 ## Run locally
 
