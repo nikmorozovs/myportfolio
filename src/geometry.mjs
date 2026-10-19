@@ -1,183 +1,97 @@
-/** Pure scroll → geometry mapping. Units are viewport heights, never elapsed time. */
-export const STROKE = 1.5;
-export const END = 11.65;
-export const WORK = 5.65;
-export const TIMES = Object.freeze([0, .95, 1.75, 3.35, 5.15, 6.15, 7.65, 9.55, 10.9, END]);
-export const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-export const mix = (a, b, t) => a + (b - a) * t;
-export const smooth = t => { t = clamp(t); return t * t * (3 - 2 * t); };
-export const interval = (u, a, b) => clamp((u - a) / (b - a));
-const logMix = (a, b, t) => Math.exp(mix(Math.log(a), Math.log(b), t));
-const dot = (a, b) => a.reduce((v, x, i) => v + x * b[i], 0);
-const sub = (a, b) => a.map((x, i) => x - b[i]);
-const lerp3 = (a, b, t) => a.map((x, i) => mix(x, b[i], t));
-const n = v => Number(v.toFixed(3));
+import {AIRCRAFT,CASE_WINDOWS,aircraftSVG} from './aircraft.mjs';
+export const STROKE=1.5;
+export const PHASE=Object.freeze({takeoff:2.35,turn:3.75,zoom:5.85,handoff:7.15,hold:8,pan:9.25,orbit:10.85,approach:12.85,fade:14.15,end:15});
+export const END=PHASE.end,WORK=8.6;
+export const TIMES=Object.freeze([0,...Object.values(PHASE)]);
+export const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+export const mix=(a,b,t)=>a+(b-a)*t;
+export const interval=(u,a,b)=>clamp((u-a)/(b-a));
+export const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
+export const smoother=t=>{t=clamp(t);return t*t*t*(t*(t*6-15)+10);};
+const logMix=(a,b,t)=>Math.exp(mix(Math.log(a),Math.log(b),t));
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const lerp3=(a,b,t)=>a.map((x,i)=>mix(x,b[i],t));
+const num=x=>Number(x.toFixed(3));
+export const scrollUnit=(w,h)=>h*(w<640?1.08:1);
+export function introLayout(width,height){
+ const mobile=width<640;
+ const labelsY=height<480?.84*height:mobile?(height<735?.81:.76)*height:.705*height;
+ return{labelsY,lineStart:labelsY+(height<480?26:mobile?38:49),worldHeight:scrollUnit(width,height)*4.4+height};
+}
+function slerp(a,b,t){const d=dot(a.slice(0,3),b.slice(0,3))+a[3]*b[3],angle=Math.acos(clamp(d,-1,1));if(angle<1e-8)return a;return a.map((v,i)=>(Math.sin((1-t)*angle)*v+Math.sin(t*angle)*b[i])/Math.sin(angle));}
+function basis([x,y,z,w]){return[[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];}
+export function sceneAt(progress,width,height){
+ const u=clamp(progress,0,END),mobile=width<640,unit=scrollUnit(width,height),travel=u*unit;
+ const topQ=[.5,.5,.5,.5],turn=smoother(interval(u,PHASE.turn,PHASE.zoom));
+ let axes=basis(slerp(topQ,[0,0,0,1],turn));
+ const sideScale=Math.min(width*.82/AIRCRAFT.length,height*.45/300);
+ const topScale=Math.min(sideScale*.75,height*.36/AIRCRAFT.length);
+ const enter=smoother(interval(u,PHASE.takeoff,PHASE.turn));
+ let scale=logMix(topScale*.035,topScale,enter);
+ let center=[width*.5,mix(-height*.45,height*.57,enter)],target=[0,0,0];
 
-function slerp(a, b, t) {
-  let d = dot(a, b);
-  if (d < 0) { b = b.map(x => -x); d = -d; }
-  if (d > .9995) {
-    const q = a.map((x, i) => mix(x, b[i], t));
-    const l = Math.hypot(...q); return q.map(x => x / l);
-  }
-  const angle = Math.acos(clamp(d, -1, 1));
-  return a.map((x, i) => (Math.sin((1 - t) * angle) * x + Math.sin(t * angle) * b[i]) / Math.sin(angle));
+ if(u>=PHASE.turn){scale=logMix(topScale,sideScale,turn);center[1]=mix(height*.57,height*.63,turn);}
+ const caseSpan=3*AIRCRAFT.windowPitch+AIRCRAFT.windowWidth;
+ const windowWidth=Math.min(142,(width-(mobile?48:90))*AIRCRAFT.windowWidth/caseSpan);
+ const finalScale=windowWidth/AIRCRAFT.windowWidth;
+ const zoom=smoother(interval(u,PHASE.zoom,PHASE.hold));
+ if(u>=PHASE.zoom){scale=logMix(sideScale,finalScale,zoom);target=lerp3([0,0,0],[AIRCRAFT.caseX,11,CASE_WINDOWS[0].world[2]],zoom);center[1]=mix(height*.63,height*.55,zoom);}
+ const engine=[AIRCRAFT.engineX,AIRCRAFT.engineY,AIRCRAFT.engineZ],intake=[AIRCRAFT.intakeX,AIRCRAFT.engineY,AIRCRAFT.engineZ];
+ const engineScale=Math.min(width*.68/(2*AIRCRAFT.engineRadius),height*.58/(2*AIRCRAFT.engineRadius));
+ const pan=smoother(interval(u,PHASE.pan,PHASE.orbit));
+ if(u>=PHASE.pan){
+  target=lerp3([AIRCRAFT.caseX,11,CASE_WINDOWS[0].world[2]],engine,pan);scale=logMix(finalScale,engineScale,pan);center[1]=mix(height*.55,height*.53,pan);
+  const e=.13*pan;axes=[[1,0,0],[0,Math.cos(e),-Math.sin(e)],[0,Math.sin(e),Math.cos(e)]];
+ }
+ const orbit=smoother(interval(u,PHASE.orbit,PHASE.approach)),yaw=orbit*Math.PI/2;
+ if(u>=PHASE.orbit){
+  const e=.13*(1-orbit),c=Math.cos(yaw),s=Math.sin(yaw);
+  axes=[[c,0,s],[Math.sin(e)*s,Math.cos(e),-Math.sin(e)*c],[-s*Math.cos(e),Math.sin(e),c*Math.cos(e)]];
+  target=lerp3(engine,intake,orbit);
+ }
+ if(u>=PHASE.approach)scale=engineScale*logMix(1,3.8,smoother(interval(u,PHASE.approach,PHASE.fade)));
+ if(u>=PHASE.fade)scale=engineScale*logMix(3.8,6.3,smoother(interval(u,PHASE.fade,END)));
+ const fade=1-smooth(interval(u,PHASE.fade,END));
+ const project=point=>{const v=point.map((x,i)=>x-target[i]);return[center[0]+dot(axes[0],v)*scale,center[1]-dot(axes[1],v)*scale];};
+ const windows=CASE_WINDOWS.map(c=>{const p=project(c.world);return{i:c.i,world:[...c.world],x:p[0],y:p[1],width:AIRCRAFT.windowWidth*scale,height:AIRCRAFT.windowHeight*scale,radius:AIRCRAFT.windowWidth*scale*.38};});
+ const bandHeight=Math.max(164,windowWidth/.76+76),crop=smoother(interval(u,PHASE.zoom,PHASE.handoff));
+ let clip={x:0,y:mix(0,center[1]-bandHeight/2,crop),width,height:mix(height,bandHeight,crop)};
+ if(u>=PHASE.pan)clip={x:0,y:mix(center[1]-bandHeight/2,0,pan),width,height:mix(bandHeight,height,pan)};
+ let state=0;if(u>.18)state=1;if(u>=PHASE.takeoff)state=2;if(u>=PHASE.turn)state=3;if(u>=PHASE.zoom)state=4;if(u>=PHASE.pan)state=5;if(u>=PHASE.orbit)state=6;if(u>=PHASE.fade)state=7;
+ const model=u<PHASE.handoff?'overview':'detail';
+ return{u,width,height,mobile,unit,travel,worldTranslate:[0,-travel],intro:introLayout(width,height),state,model,axes,scale,target,center,project,windows,windowWidth,finalScale,engine,engineScale,intake,orbit,yaw,fade,planeAlpha:1,clip,caseReady:u>=PHASE.hold&&u<PHASE.pan};
 }
-function basis(q) {
-  const [x,y,z,w] = q;
-  return [
-    [1-2*(y*y+z*z), 2*(x*y-z*w), 2*(x*z+y*w)],
-    [2*(x*y+z*w), 1-2*(x*x+z*z), 2*(y*z-x*w)],
-    [2*(x*z-y*w), 2*(y*z+x*w), 1-2*(x*x+y*y)]
-  ];
+/** Fixed final typography column. Only the external shell interpolates. */
+export function previewRect(_origin,width,height){
+ const top=height<480?64:90,bottom=height<480?18:24;
+ const w=Math.min(420,width-40,(height-top-bottom)*.76),h=w/.76;
+ return{x:(width-w)/2,y:clamp((height-h)/2,top,height-h-bottom),width:w,height:h,radius:w*.38,paddingX:Math.max(26,w*.16),paddingY:h*.16,compact:h<390};
 }
-
-export function sceneAt(u, width, height) {
-  u = clamp(u, 0, END);
-  const mobile = width < 640;
-  const windowWidth = mobile ? clamp((width - 72) / 4, 55, 78) : Math.min(clamp(width * .105, 90, 142),(width-80)*22/166);
-  const finalScale = windowWidth / 22;
-  // A deliberately conditional airframe: window framing governs the geometry.
-  const bodyY = mix(92,Math.max(92,height*.64/finalScale+12),smooth(interval(u,3.35,5.15)));
-  const engineGap = mix(64,Math.max(105,height*.65/finalScale),smooth(interval(u,3.35,5.15)));
-  const engine = [-14, -bodyY - engineGap, 76];
-  const sideScale = Math.min(width * .80 / 730, height * .48 / (bodyY * 2));
-  const topScale = Math.min(sideScale * .64, height * .35 / 730);
-  const side = basis([0,0,0,1]);
-  const top = [.5,.5,.5,.5];
-  const rotate = smooth(interval(u, 1.75, 3.35));
-  let axes = basis(slerp(top, [0,0,0,1], rotate));
-  let scale = logMix(topScale * .26, topScale, smooth(interval(u, .95, 1.75)));
-  if (u >= 1.75) scale = logMix(topScale, sideScale, rotate);
-  const zoom = smooth(interval(u, 3.35, 5.15));
-  if (u >= 3.35) scale = logMix(sideScale, finalScale, zoom);
-  let target = lerp3([0,0,0], [0,10,44], zoom);
-  let center = [width * .5, mix(height * .59, height * .54, zoom)];
-  if (u >= 6.15) {
-    const pan = smooth(interval(u, 6.15, 7.65));
-    target = lerp3([0,10,44], engine, pan);
-    center[1] = mix(height * .54, height * .52, pan);
-    const elevation = .13 * pan;
-    axes = [[1,0,0],[0,Math.cos(elevation),-Math.sin(elevation)],[0,Math.sin(elevation),Math.cos(elevation)]];
-  }
-  const orbit = smooth(interval(u, 7.65, 9.55));
-  const yaw = orbit * Math.PI / 2;
-  if (u >= 7.65) {
-    const e = .13 * (1 - orbit), c = Math.cos(yaw), s = Math.sin(yaw);
-    axes = [[c,0,s],[Math.sin(e)*s,Math.cos(e),-Math.sin(e)*c],[-s*Math.cos(e),Math.sin(e),c*Math.cos(e)]];
-    // Track the inlet, so the end of the orbit is centred on the circular opening.
-    target = lerp3(engine, [engine[0]-78,engine[1],engine[2]], orbit);
-  }
-  if (u >= 9.55) {
-    const approach = smooth(interval(u, 9.55, 10.9));
-    scale = finalScale * logMix(1, mobile ? 4.1 : 3.2, approach);
-  }
-  if (u >= 10.9) scale = finalScale * logMix(mobile ? 4.1 : 3.2, mobile ? 6.4 : 5.2, smooth(interval(u, 10.9, END)));
-  const fade = 1 - smooth(interval(u, 10.9, END));
-  const planeAlpha = smooth(interval(u, .95, 1.24));
-  const gap = mobile ? (width-48-windowWidth)/(3*finalScale) : 48;
-  const project = point => {
-    const v = sub(point, target);
-    return [center[0] + dot(axes[0], v) * scale, center[1] - dot(axes[1], v) * scale];
-  };
-  const windows = [-1.5,-.5,.5,1.5].map((k, i) => {
-    const world = [k*gap,10,44];
-    const p = project(world);
-    return {i, world, x:p[0], y:p[1], width:22*scale, height:22*scale/.76, radius:22*scale*.38};
-  });
-  let state = 0;
-  if (u > .05) state = 1;
-  if (u >= .95) state = 2;
-  if (u >= 1.75) state = 3;
-  if (u >= 3.35) state = 4;
-  if (u >= 6.15) state = 5;
-  if (u >= 7.65) state = 6;
-  if (u >= 10.9) state = 7;
-  return {u,width,height,mobile,windowWidth,finalScale,bodyY,engineGap,engine,axes,scale,target,center,project,windows,state,fade,planeAlpha,orbit,yaw,side};
+export function routeMapSVG(width,height){
+ const {lineStart}=introLayout(width,height),unit=scrollUnit(width,height),w=width,Y=k=>k*unit,X=k=>k*w,paths=[];
+ const shape=[
+  [[.17,lineStart],[.17,Y(.98)],[.80,Y(.91)],[.77,Y(1.28)],[.74,Y(1.56)],[.12,Y(1.32)],[.22,Y(1.72)],[.28,Y(1.98)],[.50,Y(2.03)],[.50,Y(2.20)]],
+  [[.39,lineStart],[.39,Y(1.10)],[.12,Y(1.14)],[.30,Y(1.38)],[.54,Y(1.60)],[.82,Y(1.28)],[.71,Y(1.72)],[.65,Y(1.98)],[.50,Y(2.04)],[.50,Y(2.20)]],
+  [[.61,lineStart],[.61,Y(1.03)],[.86,Y(1.07)],[.66,Y(1.34)],[.46,Y(1.63)],[.13,Y(1.30)],[.29,Y(1.77)],[.36,Y(2.01)],[.50,Y(2.07)],[.50,Y(2.20)]],
+  [[.83,lineStart],[.83,Y(1.14)],[.23,Y(.97)],[.17,Y(1.39)],[.12,Y(1.67)],[.86,Y(1.53)],[.67,Y(1.84)],[.61,Y(2.04)],[.50,Y(2.09)],[.50,Y(2.20)]]
+ ];
+ shape.forEach((ps,i)=>{for(const offset of [0,5]){
+  const p=ps.map(([x,y],j)=>[X(x)+(j===ps.length-1?0:offset*(i%2?1:-1)),y]);
+  paths.push(`<path opacity="${offset?.5:1}" d="M${p[0].map(num)}C${p[1].map(num)} ${p[2].map(num)} ${p[3].map(num)}C${p[4].map(num)} ${p[5].map(num)} ${p[6].map(num)}C${p[7].map(num)} ${p[8].map(num)} ${p[9].map(num)}"/>`);
+ }});
+ const runway=`<path d="M${X(.5)-8},${Y(2.2)}V${Y(3.55)}M${X(.5)+8},${Y(2.2)}V${Y(3.55)}"/><path stroke-dasharray="12 20" d="M${X(.5)},${Y(2.2)}V${Y(3.62)}"/>`;
+ return `<g class="scene-line">${paths.join('')}${runway}</g>`;
 }
-
-export function previewRect(win, width, height) {
-  const top=height<480?64:88,bottom=height<480?18:30;
-  const w = Math.min(280, width - 40, (height-top-bottom) * .76);
-  const h = w / .76;
-  return {x:clamp(win.x - w/2, 20, width-w-20),y:clamp(win.y-h/2, top, height-h-bottom),width:w,height:h,radius:w*.38};
+export function routeSVG(s){return `<g transform="translate(0 ${num(-s.travel)})">${routeMapSVG(s.width,s.height)}</g>`;}
+export function pointsPath(ps,close=true){return`M${ps.map(p=>p.map(num).join(',')).join('L')}${close?'Z':''}`;}
+export function sceneSVG(s,options={}){
+ if(s.fade===0)return'';
+ const bounds=[[-460,-105,-368],[460,205,368]].flatMap(p=>[p,[p[0],p[1],-p[2]],[p[0],-p[1],p[2]],[-p[0],p[1],p[2]]]).map(s.project);
+ if(Math.max(...bounds.map(p=>p[1]))<0||Math.min(...bounds.map(p=>p[1]))>s.height)return'';
+ return aircraftSVG(s,{hideCaseWindows:options.hideCaseWindows});
 }
-
-export function pointsPath(points, close = true) {
-  if (!points.length) return '';
-  return `M${points.map(p => `${n(p[0])},${n(p[1])}`).join('L')}${close?'Z':''}`;
-}
-function hull(points) {
-  const p = points.toSorted((a,b) => a[0]-b[0] || a[1]-b[1]);
-  const cross = (a,b,c) => (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
-  const half = list => {const out=[];for(const q of list){while(out.length>1 && cross(out.at(-2),out.at(-1),q)<=0)out.pop();out.push(q);}return out;};
-  const a=half(p),b=half(p.toReversed());a.pop();b.pop();return a.concat(b);
-}
-const ring = (x,cy,cz,ry,rz=ry,count=64) => Array.from({length:count},(_,i) => {
-  const t=i/count*Math.PI*2;return [x,cy+Math.cos(t)*ry,cz+Math.sin(t)*rz];
-});
-function path(d, extra='') {return `<path d="${d}" ${extra}/>`;}
-
-export function routeSVG(s) {
-  const {u,width:w,height:h} = s;
-  const join=smooth(interval(u,0,.95));
-  const opacity=1-smooth(interval(u,1.0,1.65));
-  const endY=mix((h<480?.977:.955)*h,.48*h,join),startY=mix((h<480?.915:s.mobile?(h<735?.875:.845):.765)*h,.23*h,join);
-  const starts=[.17,.39,.61,.83];
-  const routes=starts.map((x,i)=>{
-    const startX=mix(x*w,w*.5+(i-1.5)*w*.075,join);
-    const midY=mix(startY,endY,.55);
-    return path(`M${n(startX)} ${n(startY)}V${n(midY-18)}Q${n(startX)} ${n(midY+14)} ${n(mix(startX,w*.5,.5))} ${n(midY+26)}T${n(w*.5)} ${n(endY)}`);
-  }).join('');
-  return `<g class="scene-line" opacity="${n(opacity)}">${routes}<circle cx="${n(w*.5)}" cy="${n(endY)}" r="5" fill="var(--bg)"/>${path(`M${w*.5} ${endY+5}V${mix(endY+5,h*.68,join)}`)}</g>`;
-}
-
-export function airframeSVG(s, {windowOutlines=true,windowOpacity=1}={}) {
-  const P=s.project, by=s.bodyY;
-  const profiles=[[-380,0],[-359,.30],[-325,.67],[-260,.94],[-170,1],[140,.96],[245,.61],[310,.19],[350,0]];
-  const cloud=profiles.flatMap(([x,r])=>ring(x,0,0,by*r,44*r,48)).map(P);
-  const wings=[];
-  for(const sign of [-1,1]){
-    wings.push([[-30,-by*.95,sign*32],[110,-by*1.35,sign*255],[170,-by*1.35,sign*263],[80,-by*.95,sign*38]]);
-    wings.push([[225,10,sign*21],[290,18,sign*116],[323,18,sign*119],[292,5,sign*13]]);
-  }
-  const wingPaths=wings.map(p=>path(pointsPath(p.map(P)),'fill="var(--bg)"')).join('');
-  const body=path(pointsPath(hull(cloud)),'fill="var(--bg)"');
-  const fin=path(pointsPath([[200,by*.55,0],[270,by+102,0],[300,by+102,0],[318,by*.15,0]].map(P)),'fill="var(--bg)"');
-  const cockpit=path(pointsPath([[-333,by*.33,33],[-316,by*.53,38],[-282,by*.53,41],[-274,by*.33,43]].map(P)));
-  const windowAlpha=smooth(interval(s.u,2.5,3.35));
-  const windows=windowOutlines?s.windows.map(w=>`<rect x="${n(w.x-w.width/2)}" y="${n(w.y-w.height/2)}" width="${n(w.width)}" height="${n(w.height)}" rx="${n(w.radius)}" fill="var(--bg)"/>`).join(''):'';
-  return `<g class="scene-line">${wingPaths}${body}${fin}${cockpit}<g opacity="${n(windowAlpha*windowOpacity)}">${windows}</g></g>`;
-}
-
-export function engineSVG(s) {
-  const P=s.project,[cx,cy,cz]=s.engine;
-  const profiles=[[-78,36],[-67,43],[52,41],[89,31]];
-  const outer=profiles.flatMap(([x,r])=>ring(cx+x,cy,cz,r)).map(P);
-  const nacelle=path(pointsPath(hull(outer)),'fill="var(--bg)"');
-  const front=ring(cx-78,cy,cz,36).map(P);
-  const inner=ring(cx-78.2,cy,cz,29.5).map(P);
-  const back=ring(cx+89,cy,cz,31).map(P);
-  const blades=Array.from({length:12},(_,i)=>{
-    const a=i*Math.PI/6;
-    const polar=(r,t)=>P([cx-78.5,cy+Math.cos(t)*r,cz+Math.sin(t)*r]);
-    const p1=polar(5,a),p2=polar(21,a+.14),p3=polar(29,a+.52),p4=polar(29,a+.76),p5=polar(13,a+.62),p6=polar(5,a+.48);
-    return path(`M${p1.map(n)}Q${p2.map(n)} ${p3.map(n)}L${p4.map(n)}Q${p5.map(n)} ${p6.map(n)}Z`);
-  }).join('');
-  const visible=clamp(-s.axes[2][0]*2.8);
-  const hub=path(pointsPath(ring(cx-78.8,cy,cz,5.5,5.5,40).map(P)),'fill="var(--bg)"');
-  const mount=path(pointsPath([[cx+3,cy+43,cz],[cx+9,-bySafe(s),cz],[cx+51,-bySafe(s),cz],[cx+48,cy+43,cz]].map(P)));
-  return `<g class="scene-line"><g opacity="${n(1-s.orbit)}">${mount}</g>${nacelle}${path(pointsPath(back),'opacity=".45"')}${path(pointsPath(front),'fill="var(--bg)"')}${path(pointsPath(inner))}<g opacity="${n(visible)}">${blades}${hub}</g></g>`;
-}
-function bySafe(s){return s.bodyY*.65;}
-
-export function sceneSVG(s, options={}) {
-  const route=s.u<1.65?routeSVG(s):'';
-  const plane=s.u<7.65?airframeSVG(s,options):'';
-  const engine=s.u>.95?engineSVG(s):'';
-  return `${route}<g opacity="${n(s.planeAlpha*s.fade)}">${plane}${engine}</g>`;
-}
-
-export function standaloneSVG(s, options={}) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s.width}" height="${s.height}" viewBox="0 0 ${s.width} ${s.height}"><style>:root{--bg:#F6F5F0}.scene-line{fill:none;stroke:#AB7753;stroke-width:${STROKE};stroke-linecap:round;stroke-linejoin:round}.scene-line *{vector-effect:non-scaling-stroke}</style><rect width="100%" height="100%" fill="#F6F5F0"/>${sceneSVG(s,options)}</svg>`;
+export function airframeSVG(s,options={}){return aircraftSVG(s,options);}
+export function engineSVG(s){return aircraftSVG({...s,model:'detail'});}
+export function standaloneSVG(s,options={}){
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="${s.width}" height="${s.height}" viewBox="0 0 ${s.width} ${s.height}"><style>:root{--bg:#F6F5F0}.scene-line{fill:none;stroke:#AB7753;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.scene-line *{vector-effect:non-scaling-stroke}</style><rect width="100%" height="100%" fill="#F6F5F0"/>${s.u<PHASE.turn?routeSVG(s):''}${sceneSVG(s,options)}</svg>`;
 }

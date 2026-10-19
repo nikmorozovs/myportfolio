@@ -23,9 +23,12 @@ for(const file of html){
   if(/lorem ipsum/i.test(source)&&!source.includes('copy in progress'))failures.push('Unlabelled placeholder');
   if(file.includes('/cases/')&&source.includes('class="journey"'))failures.push('Intro scene repeated on case page');
 }
-const css=await readFile(path.join(root,'assets/style.css'),'utf8');
-for(const [,url] of css.matchAll(/url\(['"]?([^)'" ]+)/g)){
-  try{await stat(path.resolve(root,'assets',url));checked++;}catch{failures.push(`Missing CSS asset ${url}`);}
+for(const file of files.filter(x=>x.endsWith('.css'))){
+ const css=await readFile(file,'utf8');
+ for(const [,url] of css.matchAll(/url\(['"]?([^)'" ]+)/g)){
+  if(/^(data:|https?:)/.test(url))continue;
+  try{await stat(path.resolve(path.dirname(file),url));checked++;}catch{failures.push(`Missing CSS asset ${url}`);}
+ }
 }
 for(const file of files.filter(x=>x.endsWith('.mjs'))){
  const source=await readFile(file,'utf8');
@@ -33,6 +36,22 @@ for(const file of files.filter(x=>x.endsWith('.mjs'))){
   try{await stat(path.resolve(path.dirname(file),url));checked++;}catch{failures.push(`Missing module ${url}`);}
  }
 }
+// Check the built DOM hierarchy, not merely the presence of class strings.
+const source=await readFile(path.join(root,'index.html'),'utf8'),stack=[],nodes=[],voidTags=new Set(['meta','link','br','hr','img','input']);
+for(const tag of source.matchAll(/<(\/?)([a-z][\w-]*)\b([^>]*)>/gi)){
+ const [,end,name,attrs]=tag;
+ if(end){if(stack.at(-1)?.name!==name)failures.push(`Unbalanced home tag: ${name}`);else stack.pop();continue;}
+ const classes=(attrs.match(/\bclass="([^"]*)"/)?.[1]||'').split(/\s+/),node={name,classes,parent:stack.at(-1)};nodes.push(node);
+ if(!voidTags.has(name)&&!attrs.endsWith('/'))stack.push(node);
+}
+const has=(n,c)=>n?.classes.includes(c),find=c=>nodes.find(n=>has(n,c)),ancestors=n=>{const a=[];while(n){a.push(n);n=n.parent;}return a;};
+const world=find('intro-world');
+for(const c of ['intro','skills','route-map'])if(!ancestors(find(c)).includes(world))failures.push(`${c} must share the intro world coordinates`);
+const portal=find('preview-layer');
+if(!portal||ancestors(portal).some(n=>has(n,'stage')||has(n,'journey'))||portal.parent?.name!=='body')failures.push('Preview must be a body portal outside the clipped stage');
+for(const c of ['case-slot','case-window'])if(nodes.filter(n=>has(n,c)).length!==4)failures.push(`Requires exactly four ${c} entrances`);
+if(nodes.filter(n=>has(n,'preview-card')).length!==1)failures.push('Requires one shared preview card');
+if(stack.length)failures.push('Unclosed home markup');
 if(files.some(x=>/\.(docx|pdf|ttf)$/i.test(x)))failures.push('Unexpected input or source font in deployment');
 if(failures.length){console.error(failures.join('\n'));process.exit(1);}
 const bytes=(await Promise.all(files.map(async x=>(await stat(x)).size))).reduce((a,b)=>a+b,0);

@@ -1,0 +1,40 @@
+/* Revision: shared intro world, fixed aircraft geometry and one viewport preview portal. */
+.intro-world{position:relative}.route-map,.flight-particles{display:none}
+.motion-ready .intro-world{position:absolute;inset:0 0 auto;z-index:1;will-change:transform;transform-origin:0 0;pointer-events:none}
+.motion-ready .intro-world .intro{pointer-events:auto;opacity:1}
+.motion-ready .intro-world .skills{opacity:1}
+.motion-ready .route-map{display:block;position:absolute;top:0;left:0;width:100%;overflow:visible;pointer-events:none}
+.motion-ready .scene{z-index:2}
+.motion-ready .flight-particles{display:block;position:fixed;top:0;left:0;width:100%;height:var(--stage-height);z-index:0;pointer-events:none}
+.motion-ready .work-zone{z-index:4}
+.motion-ready .work-zone .case-window{min-width:0;min-height:0}
+.motion-ready .case-window{gap:4px}.motion-ready .case-window .case-icon{width:clamp(18px,2.8vw,42px);height:clamp(20px,3vw,46px)}
+.motion-ready .case-window .window-name{font-size:clamp(9px,1vw,13px)}
+.motion-ready .case-window .window-arrow{font-size:clamp(10px,1vw,17px)}
+.motion-ready .scene-caption{top:16%;z-index:3}
+.motion-ready .stage-footer{z-index:5}
+.preview-layer[hidden]{display:none!important}
+.preview-layer{position:fixed;inset:0;z-index:80;pointer-events:none}
+.preview-backdrop{position:absolute;inset:0;background:rgba(35,35,35,.36);opacity:0;transition:opacity .3s ease;pointer-events:none}
+.preview-layer.is-dimmed .preview-backdrop{opacity:1}
+
+.preview-card{position:absolute;box-sizing:border-box;border:1.5px solid var(--copper);border-radius:38% / 28.88%;background:var(--bg);overflow:hidden;pointer-events:auto;isolation:isolate;transition:left .38s cubic-bezier(.2,.75,.2,1),top .38s cubic-bezier(.2,.75,.2,1),width .38s cubic-bezier(.2,.75,.2,1),height .38s cubic-bezier(.2,.75,.2,1)}
+.preview-card .preview-content{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--final-w);height:var(--final-h);box-sizing:border-box;padding:var(--pad-y) var(--pad-x);display:flex;flex-direction:column;align-items:stretch;opacity:0;transition:opacity .12s ease;pointer-events:none}
+.preview-layer.is-open .preview-content{opacity:1;pointer-events:auto}
+.preview-layer.is-opening .preview-content,.preview-layer.is-closing .preview-content{opacity:0;transition-delay:0s}
+.preview-card .preview-content h3{font-size:clamp(23px,2.3vw,30px);line-height:1.25;margin:14px 0 20px;letter-spacing:-.035em}
+.preview-card .preview-content p{font-size:15px;line-height:1.75}
+.preview-card .preview-content>.eyebrow{font-size:10px}
+.preview-card .open-case{font-size:14px;align-self:flex-start;margin-top:auto;padding-top:20px;min-height:42px}
+.preview-close{position:absolute;left:50%;top:4%;transform:translateX(-50%);width:40px;height:40px;padding:10px;border:0;background:transparent;color:var(--dark);z-index:2;opacity:0;transition:opacity .12s;pointer-events:none}
+.preview-close svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.preview-layer.is-open .preview-close{opacity:1;pointer-events:auto}
+.preview-card.compact .preview-content h3{font-size:22px;margin:10px 0 14px}
+.preview-card.compact .preview-content p{font-size:13px;line-height:1.6}
+.preview-card.compact .open-case{font-size:13px;padding-top:12px}
+.preview-layer.is-closing .preview-card{pointer-events:none}
+@media(max-width:639px){.motion-ready .scene-caption{top:17%}.motion-ready .work-heading{top:20%}.preview-card .preview-content h3{font-size:25px}.preview-card .preview-content p{font-size:14px}.preview-card .preview-content>.eyebrow{font-size:9px}.preview-card .open-case{font-size:13px}}
+@media(max-height:480px){.motion-ready .scene-caption{top:19%}.motion-ready .scene-caption h2{font-size:24px}.preview-card.compact .preview-content h3{font-size:18px;margin:6px 0 9px}.preview-card.compact .preview-content p{font-size:12px}.preview-card.compact .preview-content>.eyebrow{display:none}.preview-card.compact .open-case{font-size:12px;padding-top:8px}.preview-close{top:1%;width:32px;height:32px;padding:8px}}
+@media(prefers-reduced-motion:reduce){.preview-card,.preview-content,.preview-backdrop,.preview-close{transition:none!important}.flight-particles{display:none!important}}
+
+.motion-ready .intro-world .skills{left:0;right:0}.case-window::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;height:100%;min-width:44px;min-height:44px}.case-slot.mini .window-arrow{display:none}.case-slot.mini .case-icon{width:16px;height:18px}
