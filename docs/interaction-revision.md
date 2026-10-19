@@ -29,6 +29,18 @@ The decorative stage labels were numbered 01–08 independently of the specifica
 - Rotate only the internal fan blade geometry clockwise from the front, by local scroll progress through the complete approach/fade. Keep the inlet clip and housing fixed.
 - Make the header an opaque viewport-top surface with a separately padded safe-area-aware content row. Keep it a body child outside transformed scene containers. Size Contact to at least the available viewport and leave its surplus space after the content, before the footer.
 
-## Verification scope
+## Final calibration
 
-Numerical and controller regressions will cover phase shifts/holds, Work targets, About track geometry, navigation interruption/redirection, bounded speed and continuous vibration, particle density/lifecycle/direction, runway bounds/tangents, engine occlusion and reversible fan angles. Rasterise real SVG intermediate views. The managed Sites browser capability is still unavailable; do not claim actual Safari toolbar, touch or browser-layout verification.
+The table above records the source mapping **before** the change. The final phase boundaries are: hold **8**, pan **10**, orbit **12.5**, frontal approach **14.5**, fade **15.8**, aircraft clear **16.65**. Work normally targets **8.6**. The existing 1.25-unit S4 interval now totals 2 units; downstream transition lengths are preserved. On narrow phones one unit is 1.08 viewport heights, so the added S4 reserve is about 0.81 heights. About's additional track is exactly 0.75 measured viewport, outside the aircraft timeline.
+
+Particle calibration is immutable: density multiplier **2**, opacity **0.38**, speed **100–540 px/s** (phones **75–420**) before fixed per-particle variation, count cap **40/24** and gradual emission restart. A shared actual-scroll signal caps input at **4800 px/s**, smooths acceleration over **0.18 s** and deceleration over **0.42 s**. Its response saturates at **3600 px/s**. The same signal changes vibration frequency **2.2–5.4 Hz** while keeping displacement bounded at **0.38 × 0.22 CSS px**. The phase survives model replacement; the S4 envelope is zero.
+
+Navigation lasts **220–820 ms**, with quintic easing and one active animation. It recalculates the target from current geometry, can be redirected and is interrupted by native gestures. Minor mobile visual-viewport changes redraw without shifting the scroll basis; orientation/major resize recalculates it. The header surface extends from viewport top through its safe inset and content row. Contact uses at least the actual scrollport height minus the measured header.
+
+The runway body measures **8 CSS px** wide and **0.675 scroll units** long, half the former values. Its route expansion is **0.12 unit**, after a **0.06-unit** thin segment; shared exact body bounds clip all markings. The fan rotates by **3π radians** from frontal approach to complete disappearance, without angle wrapping or independent time playback.
+
+## Verification result and limits
+
+All **44 tests** pass. Numerical and controller regressions cover reading holds, Work targets, long About flow, Contact alignment, navigation interruption/redirection, bounded speed and continuous vibration, particle density/lifecycle/direction, runway bounds/tangents, far-engine occlusion at 17 intermediate angles and reversible fan rotation. The build emits six pages; all **150 local references** pass validation. Intermediate desktop/phone SVG views were rasterised and inspected, and A/B handoff renderings remain pixel-identical at ten viewport sizes.
+
+The managed Sites browser capability is unavailable. There was no browser layout, native-event, real Safari toolbar, touch or device performance verification. See `verification.md` for the acceptance checklist and precise scope of the available evidence.

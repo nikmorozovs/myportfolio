@@ -38,17 +38,21 @@ The ordinary workflow `GITHUB_TOKEN` cannot enable a new Pages site. The connect
 | `src/geometry.mjs` | Pure scroll camera, static route, phase timings and final preview bounds |
 | `src/aircraft.mjs` | Fixed 3D lofts, matched overview/detail models and SVG surface projection |
 | `src/app.mjs` | Exact native scroll mapping, common intro world, navigation and return position |
+| `src/layout.mjs` | Header-aware Work target, About reading track and section alignment |
+| `src/motion.mjs` | Shared filtered absolute scroll speed and bounded aircraft vibration |
+| `src/navigation.mjs` | Interruptible page navigation, redirection and reduced-motion handling |
 | `src/preview.mjs` | One centred portal, fixed text layout, pointer corridor and keyboard/touch behaviour |
-| `src/particles.mjs` | Independent time-driven particle lifecycle and scroll-controlled emission |
+| `src/particles.mjs` | Time-driven particles, speed-compensated density and inward engine flow |
 | `src/content.mjs` | Four project summaries and decision outlines |
 | `src/style.css`, `src/scene.css` | Responsive layout, constant-width contours, previews and reduced-motion fallback |
 | `scripts/build.mjs` | Home/case templates; emits real pages and fallback views |
 | `public/assets/fonts/` | Local font subsets and OFL licences |
-| `tests/*.test.mjs` | Geometry, particle lifecycle and preview controller regression checks |
+| `tests/*.test.mjs` | Geometry, motion, navigation, particle lifecycle and preview controller checks |
 | `scripts/export-scene-frames.mjs` | Reproducible SVG geometry frames and A/B handoff views |
 | `docs/storyboard.svg` | Initial S0–S7 visual storyboard, committed before the prototype |
 | `docs/storyboard.md` | Revised S0–S7 requirements, timings and resolved open parameters |
 | `docs/scene-revision.md` | Initial code review and revision architecture |
+| `docs/interaction-revision.md` | Semantic state mapping and latest scroll/flight calibration |
 | `docs/content-status.md` | Editorial replacements and factual boundaries |
 | `docs/verification.md` | Check evidence and remaining browser acceptance pass |
 
@@ -68,13 +72,19 @@ The opening text, skills and a long static tangled route share one world layer, 
 
 The aircraft uses fixed-dimension 3D lofts projected to SVG: smooth fuselage and cockpit glazing, attached airfoil wings, tail, two underwing engines and many passenger windows. Only four selected windows are interactive. Quaternion interpolation establishes the side view before zooming. A more finely sampled close-up model shares the same windows and engine anchors; the late-zoom crop hides differing geometry at the direct A/B switch. There is no model crossfade or changing physical dimensions.
 
-Surface masks hide far components, while wing/tail masks follow their actual silhouette boundaries. All coordinates are computed in CSS pixels and contours use **1.5 px** with non-scaling stroke. A separate ray-tested renderer is available for offline reference, not used in the animation loop. Models are prepared during idle time; unused ray records are lazy.
+Surface masks hide far components, while wing/tail masks follow their actual silhouette boundaries. An explicit far-engine wing/fuselage mask applies throughout the top-to-side transition. All coordinates are computed in CSS pixels and contours use **1.5 px** with non-scaling stroke. A separate ray-tested renderer is available for offline reference, not used in the animation loop. Models are prepared during idle time; unused ray records are lazy.
 
 Previews open as one body-level portal above a translucent backdrop that leaves native scrolling available. The **0.76** window/preview ratio and proportional rounding are retained. Final size is calculated per viewport, up to **420 px** wide with safe padding. Text is laid out immediately at that final width, then revealed after the shell opens; letters are not scaled. A pointer corridor connects the source window and centred card. Resize, quick reopening, keyboard focus, Escape and touch activation have controller regression checks.
 
-The camera is a pure function of scroll progress, with no settling tail or time-driven flight after scrolling stops. Long moves receive more scroll distance; scale changes use logarithmic interpolation. S4 has a stable reading interval. A cropped cabin/wing/pylon view connects the window area to the engine before the 90° horizontal orbit, small descent, frontal approach and final fade. See `docs/storyboard.md` for phase timings.
+The camera is a pure function of scroll progress, with no settling tail or time-driven flight after scrolling stops. Long moves receive more scroll distance; scale changes use logarithmic interpolation. S4 adds **0.75 scroll units** to the existing stable window interval. Work targets its interior, with the windows, names and icons immediately available even on direct entry. Small mobile browser-height changes keep the scroll basis stable; orientation changes recalculate it. A cropped cabin/wing/pylon view connects the windows to a 90° horizontal engine orbit, small descent, frontal approach and final fade. During approach and fade, only the inlet-clipped fan blades rotate, by **1.5 clockwise turns** tied to scroll progress. See `docs/storyboard.md` for timings and semantic S0–S7 names.
 
-Particles have their own time-driven lifecycle. Scroll controls their emission and initial direction. S4 disables new particles but lets existing ones leave naturally; emission resumes gradually after it. No new particles spawn after the aviation scene or in About.
+The runway body is half its former width and length, filled copper with background-coloured markings clipped to its exact bounds. A short tangent-matched expansion joins the thin route to the runway without a gap.
+
+Particles have their own time-driven lifecycle. The immutable `PARTICLES` configuration fixes density at **2×** the previous calibration, with **0.38 opacity** and emission compensated for speed. Actual scroll velocity is measured in pixels/second, smoothed, limited and shared with aircraft vibration. Particle speed ranges from **100–540 px/s** on desktop and **75–420 px/s** on phones, before each particle's fixed variation. S6 flows from the viewport perimeter towards the moving engine axis, behind opaque aircraft masks. S4 stops spawning while survivors continue moving; spawning resumes gradually. No new particles appear after the aviation scene or in About.
+
+The entire aircraft, including its masks, shares one continuous vibration phase. Maximum displacement remains **0.38 × 0.22 CSS px**, independent of zoom. Scroll speed changes frequency from **2.2–5.4 Hz**, not amplitude; S4 is stationary. Camera position and fan rotation remain scroll-only.
+
+Work, About and Contact use one cancelable scroll controller, at most **820 ms** for distant targets. A new wheel, touch, pointer or scroll-key gesture interrupts it; another link retargets it from the actual page position. Reduced motion jumps directly. About receives a separate **0.75 viewport** reading reserve after the engine is gone. Longer text scrolls normally before the final readable screen holds. Contact fills at least the viewport below the header, with spare space inside the section before the footer. The header has a full opaque top surface and a separate safe-area-aware content row.
 
 Reduced motion and JavaScript failure expose ordinary flow, case links and static top/side/front views. Returning from a case restores catalogue progress when session storage is available; `#work` remains a direct fallback.
 
