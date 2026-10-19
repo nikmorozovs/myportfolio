@@ -16,8 +16,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: '22'
       - name: Check scroll geometry
@@ -27,7 +27,7 @@ jobs:
       - name: Check routes and assets
         run: npm run check
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: dist
   deploy:
@@ -41,7 +41,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Read Pages configuration
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6.0.0
       - name: Publish
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.1

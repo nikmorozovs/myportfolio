@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {sceneAt,previewRect,sceneSVG,standaloneSVG,TIMES,END,WORK,STROKE} from '../src/geometry.mjs';
-const sizes=[[320,568],[360,640],[390,844],[640,900],[768,1024],[1280,720],[1440,900],[1920,1080]];
+const sizes=[[320,568],[360,640],[390,844],[568,320],[640,900],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]];
 const close=(a,b,eps=1e-4)=>assert.ok(Math.abs(a-b)<eps,`${a} differs from ${b}`);
 
 test('S2 points down; S3 side view points left; S6 reaches a 90 degree front view',()=>{
@@ -42,7 +42,7 @@ test('preview geometry preserves aspect and corner curvature and cannot leave th
  for(const [w,h] of sizes)for(const win of sceneAt(WORK,w,h).windows){
   const p=previewRect(win,w,h);close(p.width/p.height,.76);close(p.radius/p.width,win.radius/win.width);
   assert.ok(p.x>=20);assert.ok(p.x+p.width<=w-19.999);
-  assert.ok(p.y>=88);assert.ok(p.y+p.height<=h-29.999);
+  assert.ok(p.y>=(h<480?64:88));assert.ok(p.y+p.height<=h-(h<480?17.999:29.999));
  }
 });
 

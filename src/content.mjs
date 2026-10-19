@@ -4,6 +4,7 @@ export const cases = [
     title:'A chat platform built around regional access.',
     category:'Solution evaluation · Release planning',
     summary:'Comparing chat platforms, selecting Chatwoot and planning a self-hosted regional pilot.',
+    preview:'Compared platforms and planned a self-hosted Chatwoot regional pilot.',
     scope:'Regional pilot', scopeLabel:'Delivery stage',
     contribution:'Comparison, requirements, stakeholder alignment and release planning.',
     sections:[
@@ -20,6 +21,7 @@ export const cases = [
     title:'A common framework for assessing quality.',
     category:'Process design · Google Sheets',
     summary:'A Google Sheets assessment system with weighted criteria, shared rules and privacy for bonus information.',
+    preview:'Weighted assessment criteria for two departments and more than 30 people.',
     scope:'2 departments', scopeLabel:'More than 30 people in scope',
     contribution:'Weighted criteria and rules, result comparison, privacy and synchronisation.',
     sections:[
@@ -36,6 +38,7 @@ export const cases = [
     title:'Finding the sequence behind a data defect.',
     category:'Process analysis · Defect investigation',
     summary:'Comparing successful and failed records to identify a process-sequence error and give developers a clear finding.',
+    preview:'Record comparison uncovered a sequence error for developers to resolve.',
     scope:'Process sequence', scopeLabel:'Root cause identified',
     contribution:'Record comparison, process analysis and findings for developers.',
     sections:[
@@ -52,6 +55,7 @@ export const cases = [
     title:'Payment presets, easier to find and keep current.',
     category:'Internal systems · Operational tooling',
     summary:'An internal tool combining search, favourite payment presets and automated updates.',
+    preview:'Search, favourite payment presets and automated updates. Access for 80+ staff.',
     scope:'80+ colleagues', scopeLabel:'Customer-facing employees with access',
     contribution:'Search, favourites and automation of preset updates.',
     sections:[

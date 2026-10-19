@@ -28,6 +28,6 @@ The positioning sentence, competency labels, case names/order, headings, narrati
 | WhatsApp | Non-clickable “Link pending” | Verified destination |
 | Positioning, skills and titles | Meaningful working English copy | Optional editorial corrections |
 
-Ordinary WhatsApp click-to-chat links require a full phone number. The handle alone does not establish a verified destination; `wa.me/nikmorozovs` is not published. Official guidance: https://faq.whatsapp.com/591339899867293
+The supplied WhatsApp handle does not establish a verified destination. A working share link was not available from the input; `wa.me/nikmorozovs` is not published.
 
 No financial savings, invented percentages, recommendations, star ratings, verification badges, internal screenshots or original input documents are published.

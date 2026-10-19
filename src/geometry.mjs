@@ -39,7 +39,7 @@ export function sceneAt(u, width, height) {
   const finalScale = windowWidth / 22;
   // A deliberately conditional airframe: window framing governs the geometry.
   const bodyY = mix(92,Math.max(92,height*.64/finalScale+12),smooth(interval(u,3.35,5.15)));
-  const engineGap = Math.max(105, height * .65 / finalScale);
+  const engineGap = mix(64,Math.max(105,height*.65/finalScale),smooth(interval(u,3.35,5.15)));
   const engine = [-14, -bodyY - engineGap, 76];
   const sideScale = Math.min(width * .80 / 730, height * .48 / (bodyY * 2));
   const topScale = Math.min(sideScale * .64, height * .35 / 730);
@@ -97,9 +97,10 @@ export function sceneAt(u, width, height) {
 }
 
 export function previewRect(win, width, height) {
-  const w = Math.min(242, width - 40, (height - 174) * .76);
+  const top=height<480?64:88,bottom=height<480?18:30;
+  const w = Math.min(280, width - 40, (height-top-bottom) * .76);
   const h = w / .76;
-  return {x:clamp(win.x - w/2, 20, width-w-20),y:clamp(win.y-h/2, 88, height-h-30),width:w,height:h,radius:w*.38};
+  return {x:clamp(win.x - w/2, 20, width-w-20),y:clamp(win.y-h/2, top, height-h-bottom),width:w,height:h,radius:w*.38};
 }
 
 export function pointsPath(points, close = true) {
@@ -121,7 +122,7 @@ export function routeSVG(s) {
   const {u,width:w,height:h} = s;
   const join=smooth(interval(u,0,.95));
   const opacity=1-smooth(interval(u,1.0,1.65));
-  const endY=mix(.955*h,.48*h,join),startY=mix((s.mobile?.845:.765)*h,.23*h,join);
+  const endY=mix((h<480?.977:.955)*h,.48*h,join),startY=mix((h<480?.915:s.mobile?(h<735?.875:.845):.765)*h,.23*h,join);
   const starts=[.17,.39,.61,.83];
   const routes=starts.map((x,i)=>{
     const startX=mix(x*w,w*.5+(i-1.5)*w*.075,join);

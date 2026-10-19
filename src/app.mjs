@@ -101,7 +101,7 @@ if(journey){
       if(state.state===6)alpha=1-smooth(interval(u,9.0,9.55));
       captionEye.textContent=cap[0];captionTitle.innerHTML=cap[1];captionBody.textContent=cap[2];
     }
-    caption.style.opacity=alpha;
+    caption.style.opacity=h<480&&state.state>=5?0:alpha;
     stageLabel.textContent=`0${state.state+1} — ${phaseLabels[state.state]}`;
     scrollCue.style.opacity=state.state===4?0:1;
     journey.style.setProperty('--progress',u/END);
@@ -127,7 +127,7 @@ if(journey){
   }
   function jump(u,focus=false){
     closePreview();
-    scrollTo({top:start+u*unit,behavior:'instant'});target=current=u;queue(true);
+    scrollTo({top:start+u*unit,behavior:'instant'});target=current=u;paint();queue(true);
     if(focus){const title=$('#work-title');title.tabIndex=-1;title.focus({preventScroll:true});}
   }
   function restore(){
@@ -154,8 +154,10 @@ if(journey){
     if(!motion)return;ev.preventDefault();history.pushState(null,'','#work');jump(WORK,true);
   }));
   addEventListener('hashchange',()=>{if(motion && location.hash==='#work')jump(WORK);});
-  for(const link of $$('a[href^="cases/"]'))link.addEventListener('click',()=>{
-    if(motion)writeSession('portfolio:work',{u:clamp(target,5.15,6.14)});closePreview();
+  for(const link of $$('a[href^="cases/"]'))link.addEventListener('click',ev=>{
+    if(ev.defaultPrevented)return;
+    if(motion)writeSession('portfolio:work',{u:clamp(target,5.15,6.14)});
+    setTimeout(()=>closePreview(),0);
   });
   reduced.addEventListener('change',()=>{const atWork=state?.state===4;setup();if(!motion&&atWork)work.scrollIntoView({behavior:'instant'});});
   setup();

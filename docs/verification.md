@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-`npm test` covers 320×568, 360×640, 390×844, 640×900, 768×1024, 1280×720, 1440×900 and 1920×1080.
+`npm test` covers 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080, including two landscape phone layouts.
 
 - S2 nose-down, S3 nose-left and S6 90° spatial orbit; frontal inlet is circular.
 - Continuous camera, projected points and scale at all phase boundaries.
@@ -33,4 +33,6 @@ The Sites `control-browser` capability is absent. Under its preview instructions
 
 ## Deployment
 
-The workflow publishes after checks. A successful deploy job is required before treating the target as live. The owner may need the one-time **Settings → Pages → Source → GitHub Actions** selection.
+The first [Actions run](https://github.com/nikmorozovs/myportfolio/actions/runs/39254959351) passed geometry tests, build, route checks and artifact upload. Deployment stopped at **Read Pages configuration** because this repository does not yet have Pages enabled. The GitHub repository API also reported `has_pages: false`.
+
+The owner needs the one-time **Settings → Pages → Source → GitHub Actions** selection, then a workflow rerun or another push. The connector supports source/workflow writes but exposes no Pages administration action. A successful deploy job is required before treating the target as live.
