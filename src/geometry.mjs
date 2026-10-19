@@ -1,7 +1,10 @@
 import {AIRCRAFT,CASE_WINDOWS,aircraftSVG} from './aircraft.mjs';
 export const STROKE=1.5;
-export const PHASE=Object.freeze({takeoff:2.35,turn:3.75,zoom:5.85,handoff:7.6,hold:8,pan:9.25,orbit:11.75,approach:13.75,fade:15.05,end:15.9});
-export const END=PHASE.end,WORK=8.6;
+export const READING=Object.freeze({extraWork:.75,extraAbout:.75});
+// Preserve transition lengths; the extra S4 travel shifts all later phases.
+export const PHASE=Object.freeze({takeoff:2.35,turn:3.75,zoom:5.85,handoff:7.6,hold:8,pan:9.25+READING.extraWork,orbit:11.75+READING.extraWork,approach:13.75+READING.extraWork,fade:15.05+READING.extraWork,end:15.9+READING.extraWork});
+export const END=PHASE.end,WORK=PHASE.hold+(PHASE.pan-PHASE.hold)*.3;
+export const RUNWAY=Object.freeze({width:16*.5,length:1.35*.5,convergence:2.2,thinLength:.06,blendLength:.12});
 export const TIMES=Object.freeze([0,...Object.values(PHASE)]);
 export const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 export const mix=(a,b,t)=>a+(b-a)*t;
@@ -13,15 +16,15 @@ const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 const lerp3=(a,b,t)=>a.map((x,i)=>mix(x,b[i],t));
 const num=x=>Number(x.toFixed(3));
 export const scrollUnit=(w,h)=>h*(w<640?1.08:1);
-export function introLayout(width,height){
+export function introLayout(width,height,unit=scrollUnit(width,height)){
  const mobile=width<640;
  const labelsY=height<480?.84*height:mobile?(height<735?.81:.76)*height:.705*height;
- return{labelsY,lineStart:labelsY+(height<480?26:mobile?38:49),worldHeight:scrollUnit(width,height)*4.4+height};
+ return{labelsY,lineStart:labelsY+(height<480?26:mobile?38:49),worldHeight:unit*4.4+height};
 }
 function slerp(a,b,t){const d=dot(a.slice(0,3),b.slice(0,3))+a[3]*b[3],angle=Math.acos(clamp(d,-1,1));if(angle<1e-8)return a;return a.map((v,i)=>(Math.sin((1-t)*angle)*v+Math.sin(t*angle)*b[i])/Math.sin(angle));}
 function basis([x,y,z,w]){return[[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];}
-export function sceneAt(progress,width,height){
- const u=clamp(progress,0,END),mobile=width<640,unit=scrollUnit(width,height),travel=u*unit;
+export function sceneAt(progress,width,height,options={}){
+ const u=clamp(progress,0,END),mobile=width<640,unit=options.unit||scrollUnit(width,height),travel=u*unit;
  const topQ=[.5,.5,.5,.5],turn=smoother(interval(u,PHASE.turn,PHASE.zoom));
  let axes=basis(slerp(topQ,[0,0,0,1],turn));
  const sideScale=Math.min(width*.82/AIRCRAFT.length,height*.45/300);
@@ -62,18 +65,25 @@ export function sceneAt(progress,width,height){
  const bandHeight=Math.max(164,windowWidth/.76+76),crop=smoother(interval(u,PHASE.zoom,PHASE.handoff));
  let clip={x:0,y:mix(0,center[1]-bandHeight/2,crop),width,height:mix(height,bandHeight,crop)};
  if(u>=PHASE.pan){const reveal=smoother(interval(u,PHASE.pan,mix(PHASE.pan,PHASE.orbit,.45)));clip={x:0,y:mix(center[1]-bandHeight/2,0,reveal),width,height:mix(bandHeight,height,reveal)};}
- let state=0;if(u>.18)state=1;if(u>=PHASE.takeoff)state=2;if(u>=PHASE.turn)state=3;if(u>=PHASE.zoom)state=4;if(u>=PHASE.pan)state=5;if(u>=PHASE.orbit)state=6;if(u>=PHASE.fade)state=7;
+ // Specification states are semantic, not decorative 01–08 chapter labels.
+ let state=0;if(u>.18)state=1;if(u>=PHASE.takeoff)state=2;if(u>=PHASE.turn)state=3;if(u>=PHASE.zoom)state=4;if(u>=PHASE.pan)state=5;if(u>=PHASE.approach)state=6;if(u>=END)state=7;
  const model=u<PHASE.handoff?'overview':'detail';
- return{u,width,height,mobile,unit,travel,worldTranslate:[0,-travel],intro:introLayout(width,height),state,model,axes,scale,target,center,project,windows,windowWidth,finalScale,engine,engineScale,intake,orbit,yaw,fade,planeAlpha:1,clip,caseReady:u>=PHASE.hold&&u<PHASE.pan};
+ const vanishingPoint=project([AIRCRAFT.engineX+30,AIRCRAFT.engineY,AIRCRAFT.engineZ]);
+ const fanAngle=3*Math.PI*interval(u,PHASE.approach,END);
+ return{u,width,height,mobile,unit,travel,worldTranslate:[0,-travel],intro:introLayout(width,height,unit),state,model,axes,scale,target,center,project,windows,windowWidth,finalScale,engine,engineScale,intake,orbit,yaw,fade,planeAlpha:1,clip,vanishingPoint,fanAngle,caseReady:u>=PHASE.hold&&u<PHASE.pan};
 }
 /** Fixed final typography column. Only the external shell interpolates. */
-export function previewRect(_origin,width,height){
- const top=height<480?64:90,bottom=height<480?18:24;
+export function previewRect(_origin,width,height,{headerHeight=0,safeBottom=0}={}){
+ const top=Math.max(height<480?64:90,headerHeight+12),bottom=Math.max(height<480?18:24,safeBottom+12);
  const w=Math.min(420,width-40,(height-top-bottom)*.76),h=w/.76;
  return{x:(width-w)/2,y:clamp((height-h)/2,top,height-h-bottom),width:w,height:h,radius:w*.38,paddingX:Math.max(26,w*.16),paddingY:h*.16,compact:h<390};
 }
-export function routeMapSVG(width,height){
- const {lineStart}=introLayout(width,height),unit=scrollUnit(width,height),w=width,Y=k=>k*unit,X=k=>k*w,paths=[];
+export function runwayLayout(width,height,unit=scrollUnit(width,height)){
+ const thinStart=RUNWAY.convergence*unit,blendStart=thinStart+RUNWAY.thinLength*unit,start=blendStart+RUNWAY.blendLength*unit;
+ return{cx:width*.5,width:RUNWAY.width,thinStart,blendStart,start,end:start+RUNWAY.length*unit,length:RUNWAY.length*unit};
+}
+export function routeMapSVG(width,height,unit=scrollUnit(width,height)){
+ const {lineStart}=introLayout(width,height,unit),w=width,Y=k=>k*unit,X=k=>k*w,paths=[];
  const shape=[
   [[.17,lineStart],[.17,Y(.98)],[.80,Y(.91)],[.77,Y(1.28)],[.74,Y(1.56)],[.12,Y(1.32)],[.22,Y(1.72)],[.28,Y(1.98)],[.50,Y(2.03)],[.50,Y(2.20)]],
   [[.39,lineStart],[.39,Y(1.10)],[.12,Y(1.14)],[.30,Y(1.38)],[.54,Y(1.60)],[.82,Y(1.28)],[.71,Y(1.72)],[.65,Y(1.98)],[.50,Y(2.04)],[.50,Y(2.20)]],
@@ -84,10 +94,11 @@ export function routeMapSVG(width,height){
   const p=ps.map(([x,y],j)=>[X(x)+(j===ps.length-1?0:offset*(i%2?1:-1)),y]);
   paths.push(`<path opacity="${offset?.5:1}" d="M${p[0].map(num)}C${p[1].map(num)} ${p[2].map(num)} ${p[3].map(num)}C${p[4].map(num)} ${p[5].map(num)} ${p[6].map(num)}C${p[7].map(num)} ${p[8].map(num)} ${p[9].map(num)}"/>`);
  }});
- const runway=`<path d="M${X(.5)-8},${Y(2.2)}V${Y(3.55)}M${X(.5)+8},${Y(2.2)}V${Y(3.55)}"/><path stroke-dasharray="12 20" d="M${X(.5)},${Y(2.2)}V${Y(3.62)}"/>`;
- return `<g class="scene-line">${paths.join('')}${runway}</g>`;
+ const r=runwayLayout(width,height,unit),half=r.width/2,blend=r.start-r.blendStart,n=num;
+ const ribbon=`M${n(r.cx-.75)},${n(r.blendStart)}C${n(r.cx-.75)},${n(r.blendStart+blend*.35)} ${n(r.cx-half)},${n(r.start-blend*.35)} ${n(r.cx-half)},${n(r.start)}V${n(r.end)}H${n(r.cx+half)}V${n(r.start)}C${n(r.cx+half)},${n(r.start-blend*.35)} ${n(r.cx+.75)},${n(r.blendStart+blend*.35)} ${n(r.cx+.75)},${n(r.blendStart)}Z`;
+ return `<g class="scene-line">${paths.join('')}<path d="M${n(r.cx)},${n(r.thinStart)}V${n(r.blendStart)}"/></g><path class="runway-fill" d="${ribbon}" fill="#AB7753" stroke="none"/><defs><clipPath id="runway-body-clip"><rect x="${n(r.cx-half)}" y="${n(r.start)}" width="${r.width}" height="${n(r.length)}"/></clipPath></defs><path class="runway-markings" d="M${n(r.cx)},${n(r.start)}V${n(r.end)}" fill="none" stroke="#F6F5F0" stroke-width="1.5" stroke-dasharray="12 20" clip-path="url(#runway-body-clip)"/>`;
 }
-export function routeSVG(s){return `<g transform="translate(0 ${num(-s.travel)})">${routeMapSVG(s.width,s.height)}</g>`;}
+export function routeSVG(s){return `<g transform="translate(0 ${num(-s.travel)})">${routeMapSVG(s.width,s.height,s.unit)}</g>`;}
 export function pointsPath(ps,close=true){return`M${ps.map(p=>p.map(num).join(',')).join('L')}${close?'Z':''}`;}
 export function sceneSVG(s,options={}){
  if(s.fade===0)return'';

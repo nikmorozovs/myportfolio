@@ -8,7 +8,7 @@ export function inPreviewBridge(point,a,b,padding=14){
  const distance=Math.hypot(point.x-from.x-t*dx,point.y-from.y-t*dy);
  return distance<=Math.min(Math.max(a.width,a.height)*.55+padding,58);
 }
-export function mountPreviews({slots,layer,canOpen,onNavigate}){
+export function mountPreviews({slots,layer,canOpen,onNavigate,getViewport}){
  const card=$('.preview-card',layer),content=$('.preview-content',card),closeButton=$('.preview-close',card),coarse=matchMedia('(hover: none)'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
  let destination=null,active=null,closing=null,generation=0,timers=[],pointer={x:-100,y:-100},intent=0,leave=0,suppress=false,focusOnReveal=null;
  const clear=()=>{generation++;for(const t of timers)clearTimeout(t);timers=[];clearTimeout(leave);clearTimeout(intent);};
@@ -27,7 +27,8 @@ export function mountPreviews({slots,layer,canOpen,onNavigate}){
   if(suppress||!canOpen())return;clear();const wasVisible=!layer.hidden,oldRect=wasVisible?card.getBoundingClientRect():slot.getBoundingClientRect();
   if(active===slot&&layer.classList.contains('is-open')&&!refresh)return;
   if(active)sourceLink(active).setAttribute('aria-expanded','false');active=slot;closing=null;focusOnReveal=null;
-  const final=previewRect(null,document.documentElement.clientWidth,innerHeight);destination={left:final.x,right:final.x+final.width,top:final.y,bottom:final.y+final.height,width:final.width,height:final.height};
+  const viewport=getViewport?.()||{width:document.documentElement.clientWidth,height:innerHeight};
+  const final=previewRect(null,viewport.width,viewport.height,viewport);destination={left:final.x,right:final.x+final.width,top:final.y,bottom:final.y+final.height,width:final.width,height:final.height};
   content.replaceChildren($('template',slot).content.cloneNode(true));
   const copy=$('[data-full]',content);if(copy)copy.textContent=final.compact?copy.dataset.compact:copy.dataset.full;
   layer.hidden=false;layer.classList.remove('is-open','is-closing');layer.classList.add('is-opening');

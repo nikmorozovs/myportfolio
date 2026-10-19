@@ -51,6 +51,13 @@ const portal=find('preview-layer');
 if(!portal||ancestors(portal).some(n=>has(n,'stage')||has(n,'journey'))||portal.parent?.name!=='body')failures.push('Preview must be a body portal outside the clipped stage');
 for(const c of ['case-slot','case-window'])if(nodes.filter(n=>has(n,c)).length!==4)failures.push(`Requires exactly four ${c} entrances`);
 if(nodes.filter(n=>has(n,'preview-card')).length!==1)failures.push('Requires one shared preview card');
+const header=find('site-header');
+if(header?.parent?.name!=='body')failures.push('Header must stay outside transformed scene ancestors');
+for(const c of ['header-surface','header-inner'])if(find(c)?.parent!==header)failures.push(`Missing separate header ${c}`);
+if(!source.includes('viewport-fit=cover'))failures.push('Viewport must expose mobile safe area');
+if(find('about')?.parent!==find('about-track'))failures.push('About must use one real content section in its reading track');
+if(nodes.filter(n=>has(n,'about')).length!==1)failures.push('About content must not be duplicated for the reading hold');
+if(nodes.indexOf(find('contact'))>=nodes.indexOf(find('site-footer')))failures.push('Contact must precede its footer');
 if(stack.length)failures.push('Unclosed home markup');
 if(files.some(x=>/\.(docx|pdf|ttf)$/i.test(x)))failures.push('Unexpected input or source font in deployment');
 if(failures.length){console.error(failures.join('\n'));process.exit(1);}

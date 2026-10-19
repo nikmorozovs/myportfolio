@@ -259,6 +259,12 @@ function quickGeometry(model,axes){
  components.sort((a,b)=>a.depth-b.depth);
  model.fast={key,value:components};return components;
 }
+export function rotateFanPoint(point,angle,sign=1){const y=point[1]-AIRCRAFT.engineY,z=point[2]-sign*AIRCRAFT.engineZ,c=Math.cos(angle),v=Math.sin(angle);return[point[0],AIRCRAFT.engineY+y*c-z*v,sign*AIRCRAFT.engineZ+y*v+z*c];}
+/** Screen-space opaque silhouettes also describe the particle occlusion layer. */
+export function aircraftOcclusion(s){
+ const tx=dot(s.axes[0],s.target),ty=dot(s.axes[1],s.target),screen=ps=>ps.map(p=>[s.center[0]+(p[0]-tx)*s.scale,s.center[1]-(p[1]-ty)*s.scale]);
+ return quickGeometry(getAircraft(s.model),s.axes).flatMap(c=>(c.engine?[c.mask,c.pylonMask]:c.maskLoops||[c.mask]).map(p=>({part:c.name,points:screen(p)})));
+}
 export function aircraftSVG(s,{hideCaseWindows=false}={}){
  const model=getAircraft(s.model),P=s.project,axes=s.axes,tx=dot(axes[0],s.target),ty=dot(axes[1],s.target),rect=s.clip;
  const screenHull=ps=>ps.map(p=>[s.center[0]+(p[0]-tx)*s.scale,s.center[1]-(p[1]-ty)*s.scale]);
@@ -266,20 +272,29 @@ export function aircraftSVG(s,{hideCaseWindows=false}={}){
  const mask=ps=>`<path d="${path2(screenHull(ps))}" fill="#F6F5F0" stroke="none"/>`;
  const loopMask=loops=>`<path d="${loops.map(ps=>path2(screenHull(ps))).join('')}" fill="#F6F5F0" fill-rule="evenodd" stroke="none"/>`;
  const line=ss=>`<path d="${segmentPath(ss,P,rect)}"/>`;
- const draw=[];
- for(const c of quickGeometry(model,axes)){
+ const components=quickGeometry(model,axes),draw=[],blockers=[];
+ for(const c of components){if(c.engine)blockers.push(mask(c.pylonMask),mask(c.mask));else if(c.maskLoops)blockers.push(loopMask(c.maskLoops));else blockers.push(mask(c.mask));}
+ const farWing=components.find(c=>c.name==='wing--1'),fuselage=components.find(c=>c.name==='fuselage');
+ // Centre sorting alone fails when the far wing spans depths on both sides of
+ // its engine. Mask the actual overlap throughout the top-to-side camera path.
+ const farMask=farWing?`<mask id="far-engine-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="${s.width}" height="${s.height}" style="mask-type:luminance"><rect width="${s.width}" height="${s.height}" fill="white"/><path d="${farWing.maskLoops.map(ps=>path2(screenHull(ps))).join('')}" fill="black" fill-rule="evenodd"/><path d="${path2(screenHull(fuselage.mask))}" fill="black"/></mask>`:'';
+ for(const c of components){
   if(c.engine){
+   draw.push(`<g data-aircraft-part="${c.name}"${c.name==='engine--1'&&farWing?' mask="url(#far-engine-mask)"':''}>`);
    draw.push(mask(c.pylonMask),`<g class="scene-line">${line(c.pylonLines)}</g>`,mask(c.mask),`<path class="scene-line" d="${path2(screenHull(c.mask))}"/>`);
    if(-axes[2][0]>.012){
     const id=`inlet-${c.name}`;
     draw.push(`<defs><clipPath id="${id}"><path d="${path2(c.hole.map(P))}"/></clipPath></defs><path d="${path2(c.inlet.map(P))}" fill="#F6F5F0" class="scene-line"/><g clip-path="url(#${id})" class="scene-line">`);
-    for(const f of c.curves.filter(f=>f.name==='fan-blade'))draw.push(`<path d="${path2(f.points.map(P))}"/>`);
+    draw.push(`<g class="fan-rotor" data-angle="${s.fanAngle||0}">`);
+    for(const f of c.curves.filter(f=>f.name==='fan-blade'))draw.push(`<path d="${path2(f.points.map(p=>P(rotateFanPoint(p,s.fanAngle||0,f.engineSign))))}"/>`);
+    draw.push('</g>');
     draw.push(mask(c.spinnerMask),line(c.spinnerLines),`</g><path class="scene-line" d="${path2(c.hole.map(P))}"/>`);
    }
+   draw.push('</g>');
   }else if(c.bodyCurves){
    draw.push(mask(c.mask),`<path class="scene-line" d="${path2(screenHull(c.mask))}"/><g class="scene-line">`);
    for(const curve of c.bodyCurves){if(hideCaseWindows&&curve.caseIndex>=0)continue;draw.push(line(curve.segments));}draw.push('</g>');
   }else draw.push(loopMask(c.maskLoops),`<g class="scene-line">${line(c.segments)}</g>`);
  }
- return `<defs><clipPath id="aircraft-crop"><rect x="${num(rect.x)}" y="${num(rect.y)}" width="${num(rect.width)}" height="${num(rect.height)}"/></clipPath></defs><g clip-path="url(#aircraft-crop)" opacity="${num(s.fade)}">${draw.join('')}</g>`;
+ return `<g class="aircraft-motion"><defs><clipPath id="aircraft-crop"><rect x="${num(rect.x)}" y="${num(rect.y)}" width="${num(rect.width)}" height="${num(rect.height)}"/></clipPath>${farMask}</defs><g clip-path="url(#aircraft-crop)"><g class="particle-occlusion">${blockers.join('')}</g><g class="aircraft-drawing" opacity="${num(s.fade)}">${draw.join('')}</g></g></g>`;
 }
