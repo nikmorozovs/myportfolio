@@ -2,7 +2,7 @@ import {mkdir,rm,cp,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {cases,icon} from '../src/content.mjs';
-import {sceneAt,sceneSVG,standaloneSVG} from '../src/geometry.mjs';
+import {sceneAt,sceneSVG,standaloneSVG,PHASE} from '../src/geometry.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const out=path.join(root,'dist');
 await rm(out,{recursive:true,force:true});
@@ -33,7 +33,7 @@ for(const c of cases){
 const notfound=`${head('Page not found — Nikolajs Morozovs','Return to the portfolio.','/myportfolio/')}<body id="top">${header('/myportfolio/',false)}<main class="not-found section-wrap" id="main"><p class="eyebrow">404 / PAGE NOT FOUND</p><h1>Let’s find<br>your way back.</h1><a class="text-link" href="/myportfolio/#work">Explore selected work ${arrow}</a></main></body></html>`;
 await writeFile(path.join(out,'404.html'),notfound);
 await writeFile(path.join(out,'.nojekyll'),'');
-for(const [name,u] of [['top-view',3.75],['side-view',5.85],['engine-view',12.85]]){
+for(const [name,u] of [['top-view',PHASE.turn],['side-view',PHASE.zoom],['engine-view',PHASE.approach]]){
   await writeFile(path.join(out,'assets',`${name}.svg`),standaloneSVG(sceneAt(u,640,480)));
 }
 console.log(`Built home, ${cases.length} case routes, 404 and static fallback illustrations in dist/.`);

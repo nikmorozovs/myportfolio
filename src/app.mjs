@@ -1,6 +1,7 @@
 import {END,WORK,PHASE,clamp,smooth,interval,sceneAt,sceneSVG,routeMapSVG,scrollUnit} from './geometry.mjs';
 import {mountParticles} from './particles.mjs';
 import {mountPreviews} from './preview.mjs';
+import {getAircraft} from './aircraft.mjs';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const reduced=matchMedia('(prefers-reduced-motion: reduce)'),journey=$('.journey');
 const read=key=>{try{return JSON.parse(sessionStorage.getItem(key));}catch{return null;}};
@@ -67,4 +68,5 @@ if(journey){
  addEventListener('hashchange',()=>{if(motion&&location.hash==='#work')jump(WORK);});
  reduced.addEventListener('change',()=>{const atWork=state?.caseReady;setup();if(!motion&&atWork)work.scrollIntoView({behavior:'instant'});});
  setup();
+ if(motion){const idle=globalThis.requestIdleCallback?fn=>requestIdleCallback(fn,{timeout:1200}):fn=>setTimeout(fn,60);idle(()=>{getAircraft('overview');idle(()=>getAircraft('detail'));});}
 }

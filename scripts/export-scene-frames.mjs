@@ -1,0 +1,13 @@
+import {mkdir,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+import {sceneAt,standaloneSVG,PHASE,END} from '../src/geometry.mjs';
+const [w=1440,h=900]=process.argv.slice(2).map(Number);
+if(!Number.isFinite(w)||!Number.isFinite(h)||w<240||h<240)throw new Error('Use viewport width and height in pixels, at least 240.');
+const dir=fileURLToPath(new URL(`../qa-output/scene-${w}x${h}/`,import.meta.url));
+await mkdir(dir,{recursive:true});
+const frames=[['route-start',0],['route-tangle',.65],['route-converge',1.35],['runway',2.15],['takeoff',3.2],['top',PHASE.turn],['turn-early',4.2],['turn-mid',4.7],['turn-late',5.25],['side',PHASE.zoom],['zoom',6.65],['windows',8.6],['pan',10.4],['engine',PHASE.orbit],['orbit-early',PHASE.orbit+.55],['orbit-mid',PHASE.orbit+1.05],['front',PHASE.approach],['approach',PHASE.approach+.65],['fade',PHASE.fade+.45],['clear',END]];
+for(const [name,u]of frames)await writeFile(path.join(dir,`${name}.svg`),standaloneSVG(sceneAt(u,w,h)));
+for(const model of ['overview','detail'])await writeFile(path.join(dir,`handoff-${model}.svg`),standaloneSVG({...sceneAt(PHASE.handoff,w,h),model}));
+await writeFile(path.join(dir,'manifest.json'),JSON.stringify({viewport:[w,h],frames:Object.fromEntries(frames),handoff:PHASE.handoff,note:'Projection geometry only: no HTML layout, previews, time-driven particles or browser event checks.'},null,2));
+console.log(`Exported ${frames.length+2} SVG geometry frames to ${dir}`);

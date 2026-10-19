@@ -35,15 +35,20 @@ The ordinary workflow `GITHUB_TOKEN` cannot enable a new Pages site. The connect
 
 | Path | Purpose |
 | --- | --- |
-| `src/geometry.mjs` | Pure scroll-to-geometry model, spatial camera and preview bounds |
-| `src/app.mjs` | Native scroll, brief smoothing, navigation, pointer/focus/touch previews and return position |
+| `src/geometry.mjs` | Pure scroll camera, static route, phase timings and final preview bounds |
+| `src/aircraft.mjs` | Fixed 3D lofts, matched overview/detail models and SVG surface projection |
+| `src/app.mjs` | Exact native scroll mapping, common intro world, navigation and return position |
+| `src/preview.mjs` | One centred portal, fixed text layout, pointer corridor and keyboard/touch behaviour |
+| `src/particles.mjs` | Independent time-driven particle lifecycle and scroll-controlled emission |
 | `src/content.mjs` | Four project summaries and decision outlines |
-| `src/style.css` | Responsive layouts, constant-width contours and reduced-motion fallback |
+| `src/style.css`, `src/scene.css` | Responsive layout, constant-width contours, previews and reduced-motion fallback |
 | `scripts/build.mjs` | Home/case templates; emits real pages and fallback views |
 | `public/assets/fonts/` | Local font subsets and OFL licences |
-| `tests/geometry.test.mjs` | Directions, continuity, bounds, similarity and deterministic scrubbing |
+| `tests/*.test.mjs` | Geometry, particle lifecycle and preview controller regression checks |
+| `scripts/export-scene-frames.mjs` | Reproducible SVG geometry frames and A/B handoff views |
 | `docs/storyboard.svg` | Initial S0–S7 visual storyboard, committed before the prototype |
-| `docs/storyboard.md` | Fixed requirements, working rules and selected open parameters |
+| `docs/storyboard.md` | Revised S0–S7 requirements, timings and resolved open parameters |
+| `docs/scene-revision.md` | Initial code review and revision architecture |
 | `docs/content-status.md` | Editorial replacements and factual boundaries |
 | `docs/verification.md` | Check evidence and remaining browser acceptance pass |
 
@@ -59,13 +64,28 @@ For a different repository name, change `/myportfolio/` in the 404 template and 
 
 ## Animation decisions
 
-A single vector projection goes from top-down nose-down to side-on nose-left, windows, engine, 90° horizontal orbit, frontal inlet approach and fade-out. Aircraft rotation uses quaternion interpolation. Engine rings, nacelle and blades are projected in space. All graphic coordinates are computed in CSS pixels; contours use **1.5 px** and `vector-effect: non-scaling-stroke`.
+The opening text, skills and a long static tangled route share one world layer, translated by native scroll travel. The route converges into a runway without shrinking. An already opaque aircraft flies along its continuation, grows and settles in the frame.
 
-Window previews animate dimensions without scaling a border. Window and preview ratio is **0.76**, with proportional corner curvature. The conditional airframe gently reframes during the close-up so outer contours leave the viewport while all four windows remain available. It does not reproduce a specific aircraft model.
+The aircraft uses fixed-dimension 3D lofts projected to SVG: smooth fuselage and cockpit glazing, attached airfoil wings, tail, two underwing engines and many passenger windows. Only four selected windows are interactive. Quaternion interpolation establishes the side view before zooming. A more finely sampled close-up model shares the same windows and engine anchors; the late-zoom crop hides differing geometry at the direct A/B switch. There is no model crossfade or changing physical dimensions.
 
-Scroll distances are in viewport heights; large movements receive more distance and zoom uses logarithmic scale interpolation. The S4 reading interval stays still. Smoothing settles within **140 ms** of the last scroll event; large jumps snap to the corresponding state. Native wheel/touch scrolling is never cancelled and there is no automatic camera playback.
+Surface masks hide far components, while wing/tail masks follow their actual silhouette boundaries. All coordinates are computed in CSS pixels and contours use **1.5 px** with non-scaling stroke. A separate ray-tested renderer is available for offline reference, not used in the animation loop. Models are prepared during idle time; unused ray records are lazy.
+
+Previews open as one body-level portal above a translucent backdrop that leaves native scrolling available. The **0.76** window/preview ratio and proportional rounding are retained. Final size is calculated per viewport, up to **420 px** wide with safe padding. Text is laid out immediately at that final width, then revealed after the shell opens; letters are not scaled. A pointer corridor connects the source window and centred card. Resize, quick reopening, keyboard focus, Escape and touch activation have controller regression checks.
+
+The camera is a pure function of scroll progress, with no settling tail or time-driven flight after scrolling stops. Long moves receive more scroll distance; scale changes use logarithmic interpolation. S4 has a stable reading interval. A cropped cabin/wing/pylon view connects the window area to the engine before the 90° horizontal orbit, small descent, frontal approach and final fade. See `docs/storyboard.md` for phase timings.
+
+Particles have their own time-driven lifecycle. Scroll controls their emission and initial direction. S4 disables new particles but lets existing ones leave naturally; emission resumes gradually after it. No new particles spawn after the aviation scene or in About.
 
 Reduced motion and JavaScript failure expose ordinary flow, case links and static top/side/front views. Returning from a case restores catalogue progress when session storage is available; `#work` remains a direct fallback.
+
+For geometry inspection without a browser:
+
+```sh
+npm run frames -- 1440 900
+npm run frames -- 390 844
+```
+
+The ignored `qa-output/` contains 22 SVG frames per viewport, including matched A/B views. These are geometry diagnostics. Browser interaction, CSS layout, touch behaviour, device performance and perceived animation pace still require the manual acceptance pass in `docs/verification.md`.
 
 ## Fonts
 

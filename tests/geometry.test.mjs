@@ -11,12 +11,21 @@ test('fixed aircraft has paired engines, airfoil surfaces and many decorative wi
  assert.equal(AIRCRAFT.length,900);assert.ok(AIRCRAFT.length/(AIRCRAFT.radius*2)>10);
  for(const kind of ['fuselage','wing-1','fin','stabiliser-1','pylon-1'])assert.ok(a.meshes.find(x=>x.name===kind),kind);
 });
+test('engine proportions are compact and each pylon penetrates both the wing and nacelle surfaces',()=>{
+ const model=getAircraft('overview');
+ const part=name=>{const i=model.meshes.findIndex(m=>m.name===name),start=model.meshes.slice(0,i).reduce((n,m)=>n+m.faces.length,0);return{triangles:model.triangles.slice(start,start+model.meshes[i].faces.length),bvh:null};};
+ for(const sign of [-1,1]){
+  const wing=part(`wing-${sign}`),nacelle=part(`nacelle-${sign}`),pylon=model.meshes.find(m=>m.name===`pylon-${sign}`),housing=model.meshes.find(m=>m.name===`nacelle-${sign}`);
+  const length=Math.max(...housing.vertices.map(p=>p[0]))-Math.min(...housing.vertices.map(p=>p[0]));assert.ok(length/(AIRCRAFT.engineRadius*2)>1.6&&length/(AIRCRAFT.engineRadius*2)<2.1);
+  for(const p of pylon.vertices){const target=p[1]>-20?wing:nacelle;assert.equal(pointVisible(target,p,[0,1,0]),false);assert.equal(pointVisible(target,p,[0,-1,0]),false);}
+ }
+});
 test('A/B models have identical visible window curves and engine anchors, with no layout re-spacing',()=>{
  const a=getAircraft('overview'),b=getAircraft('detail');assert.deepEqual(a.anchors,b.anchors);
  for(let i=0;i<4;i++)assert.deepEqual(a.curves.find(x=>x.caseIndex===i).points,b.curves.find(x=>x.caseIndex===i).points);
  for(const [w,h]of sizes){const s=sceneAt(PHASE.handoff,w,h);assert.equal(s.model,'detail');assert.equal(sceneAt(PHASE.handoff-.0001,w,h).model,'overview');
   // Nose, fin, opposite engine and trim boundaries are outside the window crop.
-  for(const p of [[-380,28,10],[369,180,0],[-110,-66,-122],[-400,0,0],[80,0,0]]){
+  for(const p of [[-380,28,10],[369,180,0],[AIRCRAFT.engineX,AIRCRAFT.engineY,-AIRCRAFT.engineZ],[-400,0,0],[80,0,0]]){
    const [x,y]=s.project(p);assert.ok(x<0||x>w||y<s.clip.y||y>s.clip.y+s.clip.height,`Different geometry in crop at ${w}x${h}`);
   }
  }
@@ -45,6 +54,12 @@ test('camera and projected construction remain continuous at all phase boundarie
 test('four windows fit and remain still throughout S4; touch centres remain separated',()=>{
  for(const [w,h]of sizes){const a=sceneAt(PHASE.hold,w,h),b=sceneAt(PHASE.pan-.0001,w,h);
  for(let i=0;i<4;i++){const x=a.windows[i],y=b.windows[i];close(x.width/x.height,.76);assert.ok(x.x-x.width/2>=20);assert.ok(x.x+x.width/2<=w-20);close(x.x,y.x);close(x.y,y.y);close(x.width,y.width);if(i)assert.ok(x.x-a.windows[i-1].x>44);}
+ }
+});
+test('the engine pan frames both ends of the physical connection before closing on the nacelle',()=>{
+ for(const [w,h]of sizes){const s=sceneAt(PHASE.pan+(PHASE.orbit-PHASE.pan)*.45,w,h);
+  for(const point of [CASE_WINDOWS[1].world,s.engine]){const [x,y]=s.project(point);assert.ok(x>0&&x<w);assert.ok(y>s.clip.y&&y<s.clip.y+s.clip.height);}
+  assert.ok(AIRCRAFT.length*s.scale>w*1.3,'The full aircraft must not return during the close-up transition');
  }
 });
 test('previews are centred, safe in portrait/landscape and use one final width for every origin',()=>{

@@ -1,7 +1,7 @@
 /** Fixed-dimension passenger aircraft, two sampling levels, hidden-line SVG projection.
  * Positive x points aft; y is up; z is starboard. No dimensions depend on scroll.
  */
-export const AIRCRAFT=Object.freeze({length:900,radius:38,span:736,windowWidth:3.8,windowHeight:5,windowPitch:8.4,caseX:-235.2,windowY:11,engineX:-110,engineY:-66,engineZ:122,engineRadius:23,intakeX:-172});
+export const AIRCRAFT=Object.freeze({length:900,radius:38,span:736,windowWidth:3.8,windowHeight:5,windowPitch:8.4,caseX:-109.2,windowY:11,engineX:-80,engineY:-46,engineZ:122,engineRadius:23,intakeX:-121});
 const TAU=Math.PI*2;
 const add=(a,b)=>a.map((v,i)=>v+b[i]);
 const sub=(a,b)=>a.map((v,i)=>v-b[i]);
@@ -70,11 +70,11 @@ function airfoil(lead,chord,baseY,z,thickness,n){return Array.from({length:n},(_
  });}
 function wing(sign,detail=false){
  const stations=detail?28:20,rings=[];for(let i=0;i<=stations;i++){
-  const t=i/stations,lead=-115+265*t**1.05,trail=155+34*t;
-  rings.push(airfoil(lead,trail-lead,-13+34*t,sign*(5+345*t),mix(30,4,t),detail?32:24));
+  const t=i/stations,lead=-145+225*t**1.05,trail=135-16*t;
+  rings.push(airfoil(lead,trail-lead,-20+34*t,sign*(5+345*t),mix(30,4,t),detail?32:24));
  }
  for(let i=1;i<=7;i++){
-  const t=i/7,a=t*Math.PI/2;rings.push(airfoil(150+25*t,39-25*t,21+50*(1-Math.cos(a)),sign*(350+18*Math.sin(a)),4-2.5*t,detail?32:24));
+  const t=i/7,a=t*Math.PI/2;rings.push(airfoil(80+25*t,39-25*t,14+50*(1-Math.cos(a)),sign*(350+18*Math.sin(a)),4-2.5*t,detail?32:24));
  }
  return loft(`wing-${sign}`,rings);
 }
@@ -86,23 +86,23 @@ function fin(detail=false){const rings=[],n=detail?24:20;for(let i=0;i<=20;i++){
  }return loft('fin',rings);}
 function engine(sign,detail,meshes,curves){
  const cx=AIRCRAFT.engineX,cy=AIRCRAFT.engineY,cz=sign*AIRCRAFT.engineZ,n=detail?80:48;
- const shell=[[57,15],[35,20],[10,22.5],[-30,23],[-51,22],[-60,20],[-62,18.7],[-60,17.4],[-50,17],[-38,17]];
+ const shell=[[42,15],[28,20],[7,22.5],[-20,23],[-34,22],[-40,20],[-41,18.7],[-39.5,17.4],[-33,17],[-25,17]];
  meshes.push(loft(`nacelle-${sign}`,sampleProfile(shell,detail?5:3).map(([x,r])=>ring(cx+x,cy,cz,r,n)),{caps:false}));
- meshes.push(loft(`exhaust-${sign}`,sampleProfile([[54,14.9],[65,11],[72,8.7]],3).map(([x,r])=>ring(cx+x,cy,cz,r,n))));
- meshes.push(prism(`pylon-${sign}`,[[-111,-49],[-76,-12],[-23,-11],[-43,-53]],cz,9));
- meshes.push(loft(`fan-back-${sign}`,[-37.3,-36.5].map(x=>ring(cx+x,cy,cz,17,n))));
- for(const [x,r]of [[-62,18.7],[-60,17.4],[57,15]])curves.push({name:'engine-ring',engineSign:sign,points:[...ring(cx+x,cy,cz,r,96),ring(cx+x,cy,cz,r,96)[0]]});
+ meshes.push(loft(`exhaust-${sign}`,sampleProfile([[40,14.9],[47,11],[52,8.7]],3).map(([x,r])=>ring(cx+x,cy,cz,r,n))));
+ meshes.push(prism(`pylon-${sign}`,[[cx-22,cy+17],[cx+22,-10],[cx+55,-11],[cx+36,cy+13]],cz,9));
+ meshes.push(loft(`fan-back-${sign}`,[-24.5,-24].map(x=>ring(cx+x,cy,cz,17,n))));
+ for(const [x,r]of [[-41,18.7],[-39.5,17.4],[42,15]])curves.push({name:'engine-ring',engineSign:sign,points:[...ring(cx+x,cy,cz,r,96),ring(cx+x,cy,cz,r,96)[0]]});
  for(let i=0;i<24;i++){
   const angle=i*TAU/24,radial=detail?9:5,vertices=[],faces=[],outlineA=[],outlineB=[];
   for(let j=0;j<=radial;j++){
    const t=j/radial,r=mix(3.8,16.8,t),sweep=.35*t+.28*t*t;
-   const p=(offset)=>[cx-39.8+1.1*Math.sin(t*Math.PI),cy+Math.cos(angle+sweep+offset)*r,cz+Math.sin(angle+sweep+offset)*r];
+   const p=(offset)=>[cx-26+1.1*Math.sin(t*Math.PI),cy+Math.cos(angle+sweep+offset)*r,cz+Math.sin(angle+sweep+offset)*r];
    const a=p(0),b=p(mix(.18,.22,t));vertices.push(a,b);outlineA.push(a);outlineB.push(b);
    if(j){const k=j*2;faces.push([k-2,k-1,k],[k-1,k+1,k]);}
   }
   meshes.push(prepareMesh(`blade-${sign}-${i}`,vertices,faces));curves.push({name:'fan-blade',engineSign:sign,normal:[-1,0,0],points:[...outlineA,...outlineB.toReversed(),outlineA[0]]});
  }
- meshes.push(loft(`spinner-${sign}`,sampleProfile([[-50,.12],[-49,1.4],[-45,3.2],[-38,4.2]],detail?5:3).map(([x,r])=>ring(cx+x,cy,cz,r,detail?48:32))));
+ meshes.push(loft(`spinner-${sign}`,sampleProfile([[-33,.12],[-32,1.4],[-29,3.2],[-25,4.2]],detail?5:3).map(([x,r])=>ring(cx+x,cy,cz,r,detail?48:32))));
 }
 
 const cache=new Map();
@@ -124,8 +124,10 @@ export function getAircraft(level='overview'){
   }
  }
  for(const c of curves)if(['passenger-window','cockpit','door'].includes(c.name))c.bodyNormals=c.points.map(bodyNormal);
- const triangles=meshes.flatMap(m=>m.faces.map(f=>{const a=m.vertices[f[0]],b=m.vertices[f[1]],c=m.vertices[f[2]];return{a,e1:sub(b,a),e2:sub(c,a),min:[0,1,2].map(k=>Math.min(a[k],b[k],c[k])),max:[0,1,2].map(k=>Math.max(a[k],b[k],c[k])),centre:[0,1,2].map(k=>(a[k]+b[k]+c[k])/3)};}));
- const model={level,meshes,curves,triangles,anchors:{windows:CASE_WINDOWS.map(c=>[...c.world]),engine:[AIRCRAFT.engineX,AIRCRAFT.engineY,AIRCRAFT.engineZ],intake:[AIRCRAFT.intakeX,AIRCRAFT.engineY,AIRCRAFT.engineZ]},bvh:null,last:null};
+ const model={level,meshes,curves,anchors:{windows:CASE_WINDOWS.map(c=>[...c.world]),engine:[AIRCRAFT.engineX,AIRCRAFT.engineY,AIRCRAFT.engineZ],intake:[AIRCRAFT.intakeX,AIRCRAFT.engineY,AIRCRAFT.engineZ]},bvh:null,last:null};
+ // The runtime needs surface boundaries only. Build the heavier ray reference
+ // lazily, so a model handoff does not allocate thousands of unused ray records.
+ let triangles=null;Object.defineProperty(model,'triangles',{get(){return triangles??=meshes.flatMap(m=>m.faces.map(f=>{const a=m.vertices[f[0]],b=m.vertices[f[1]],c=m.vertices[f[2]];return{a,e1:sub(b,a),e2:sub(c,a),min:[0,1,2].map(k=>Math.min(a[k],b[k],c[k])),max:[0,1,2].map(k=>Math.max(a[k],b[k],c[k])),centre:[0,1,2].map(k=>(a[k]+b[k]+c[k])/3)};}));}});
  cache.set(level,model);return model;
 }
 function buildBVH(ts){

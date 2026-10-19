@@ -23,9 +23,9 @@ export function mountPreviews({slots,layer,canOpen,onNavigate}){
   if(immediate||reduced.matches){collapse();layer.classList.remove('is-closing');layer.hidden=true;closing=null;return;}
   later(collapse,85);later(()=>{layer.hidden=true;layer.classList.remove('is-closing');closing=null;},480);
  }
- function open(slot){
+ function open(slot,{refresh=false}={}){
   if(suppress||!canOpen())return;clear();const wasVisible=!layer.hidden,oldRect=wasVisible?card.getBoundingClientRect():slot.getBoundingClientRect();
-  if(active===slot&&layer.classList.contains('is-open'))return;
+  if(active===slot&&layer.classList.contains('is-open')&&!refresh)return;
   if(active)sourceLink(active).setAttribute('aria-expanded','false');active=slot;closing=null;focusOnReveal=null;
   const final=previewRect(null,document.documentElement.clientWidth,innerHeight);destination={left:final.x,right:final.x+final.width,top:final.y,bottom:final.y+final.height,width:final.width,height:final.height};
   content.replaceChildren($('template',slot).content.cloneNode(true));
@@ -60,5 +60,5 @@ export function mountPreviews({slots,layer,canOpen,onNavigate}){
  card.addEventListener('keydown',ev=>{if(ev.key==='Tab'&&ev.shiftKey&&ev.target===closeButton&&active){ev.preventDefault();suppress=true;sourceLink(active).focus({preventScroll:true});queueMicrotask(()=>{suppress=false;});}});
  card.addEventListener('click',ev=>{if(ev.target.closest('.open-case'))onNavigate();});
  closeButton.addEventListener('click',()=>close({focus:true}));
- return{close,refresh(){if(active){const slot=active;layer.hidden=true;open(slot);}},get active(){return active;}};
+ return{close,refresh(){if(active){const slot=active,hadFocus=card.contains(document.activeElement);open(slot,{refresh:true});if(hadFocus)focusOnReveal=slot;}},get active(){return active;}};
 }

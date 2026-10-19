@@ -1,6 +1,6 @@
 import {AIRCRAFT,CASE_WINDOWS,aircraftSVG} from './aircraft.mjs';
 export const STROKE=1.5;
-export const PHASE=Object.freeze({takeoff:2.35,turn:3.75,zoom:5.85,handoff:7.15,hold:8,pan:9.25,orbit:10.85,approach:12.85,fade:14.15,end:15});
+export const PHASE=Object.freeze({takeoff:2.35,turn:3.75,zoom:5.85,handoff:7.6,hold:8,pan:9.25,orbit:11.75,approach:13.75,fade:15.05,end:15.9});
 export const END=PHASE.end,WORK=8.6;
 export const TIMES=Object.freeze([0,...Object.values(PHASE)]);
 export const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
@@ -40,7 +40,12 @@ export function sceneAt(progress,width,height){
  const engineScale=Math.min(width*.68/(2*AIRCRAFT.engineRadius),height*.58/(2*AIRCRAFT.engineRadius));
  const pan=smoother(interval(u,PHASE.pan,PHASE.orbit));
  if(u>=PHASE.pan){
-  target=lerp3([AIRCRAFT.caseX,11,CASE_WINDOWS[0].world[2]],engine,pan);scale=logMix(finalScale,engineScale,pan);center[1]=mix(height*.55,height*.53,pan);
+  target=lerp3([AIRCRAFT.caseX,11,CASE_WINDOWS[0].world[2]],engine,pan);
+  // Briefly frame the physical connection before closing onto the nacelle.
+  // This remains a cropped fragment, and avoids panning through empty space.
+  const midpoint=mix(PHASE.pan,PHASE.orbit,.45),bridgeScale=Math.min(engineScale,width/180,height/150);
+  scale=u<midpoint?logMix(finalScale,bridgeScale,smoother(interval(u,PHASE.pan,midpoint))):logMix(bridgeScale,engineScale,smoother(interval(u,midpoint,PHASE.orbit)));
+  center[1]=mix(height*.55,height*.53,pan);
   const e=.13*pan;axes=[[1,0,0],[0,Math.cos(e),-Math.sin(e)],[0,Math.sin(e),Math.cos(e)]];
  }
  const orbit=smoother(interval(u,PHASE.orbit,PHASE.approach)),yaw=orbit*Math.PI/2;
@@ -56,7 +61,7 @@ export function sceneAt(progress,width,height){
  const windows=CASE_WINDOWS.map(c=>{const p=project(c.world);return{i:c.i,world:[...c.world],x:p[0],y:p[1],width:AIRCRAFT.windowWidth*scale,height:AIRCRAFT.windowHeight*scale,radius:AIRCRAFT.windowWidth*scale*.38};});
  const bandHeight=Math.max(164,windowWidth/.76+76),crop=smoother(interval(u,PHASE.zoom,PHASE.handoff));
  let clip={x:0,y:mix(0,center[1]-bandHeight/2,crop),width,height:mix(height,bandHeight,crop)};
- if(u>=PHASE.pan)clip={x:0,y:mix(center[1]-bandHeight/2,0,pan),width,height:mix(bandHeight,height,pan)};
+ if(u>=PHASE.pan){const reveal=smoother(interval(u,PHASE.pan,mix(PHASE.pan,PHASE.orbit,.45)));clip={x:0,y:mix(center[1]-bandHeight/2,0,reveal),width,height:mix(bandHeight,height,reveal)};}
  let state=0;if(u>.18)state=1;if(u>=PHASE.takeoff)state=2;if(u>=PHASE.turn)state=3;if(u>=PHASE.zoom)state=4;if(u>=PHASE.pan)state=5;if(u>=PHASE.orbit)state=6;if(u>=PHASE.fade)state=7;
  const model=u<PHASE.handoff?'overview':'detail';
  return{u,width,height,mobile,unit,travel,worldTranslate:[0,-travel],intro:introLayout(width,height),state,model,axes,scale,target,center,project,windows,windowWidth,finalScale,engine,engineScale,intake,orbit,yaw,fade,planeAlpha:1,clip,caseReady:u>=PHASE.hold&&u<PHASE.pan};
@@ -93,5 +98,5 @@ export function sceneSVG(s,options={}){
 export function airframeSVG(s,options={}){return aircraftSVG(s,options);}
 export function engineSVG(s){return aircraftSVG({...s,model:'detail'});}
 export function standaloneSVG(s,options={}){
- return `<svg xmlns="http://www.w3.org/2000/svg" width="${s.width}" height="${s.height}" viewBox="0 0 ${s.width} ${s.height}"><style>:root{--bg:#F6F5F0}.scene-line{fill:none;stroke:#AB7753;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.scene-line *{vector-effect:non-scaling-stroke}</style><rect width="100%" height="100%" fill="#F6F5F0"/>${s.u<PHASE.turn?routeSVG(s):''}${sceneSVG(s,options)}</svg>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="${s.width}" height="${s.height}" viewBox="0 0 ${s.width} ${s.height}"><style>:root{--bg:#F6F5F0}.scene-line{fill:none;stroke:#AB7753;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.scene-line,.scene-line *{vector-effect:non-scaling-stroke}</style><rect width="100%" height="100%" fill="#F6F5F0"/>${s.u<PHASE.turn?routeSVG(s):''}${sceneSVG(s,options)}</svg>`;
 }
