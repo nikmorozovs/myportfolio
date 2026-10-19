@@ -38,7 +38,7 @@ export function sceneAt(u, width, height) {
   const windowWidth = mobile ? clamp((width - 72) / 4, 55, 78) : Math.min(clamp(width * .105, 90, 142),(width-80)*22/166);
   const finalScale = windowWidth / 22;
   // A deliberately conditional airframe: window framing governs the geometry.
-  const bodyY = Math.max(92, height * .64 / finalScale + 12);
+  const bodyY = mix(92,Math.max(92,height*.64/finalScale+12),smooth(interval(u,3.35,5.15)));
   const engineGap = Math.max(105, height * .65 / finalScale);
   const engine = [-14, -bodyY - engineGap, 76];
   const sideScale = Math.min(width * .80 / 730, height * .48 / (bodyY * 2));
@@ -137,7 +137,7 @@ export function airframeSVG(s, {windowOutlines=true,windowOpacity=1}={}) {
   const cloud=profiles.flatMap(([x,r])=>ring(x,0,0,by*r,44*r,48)).map(P);
   const wings=[];
   for(const sign of [-1,1]){
-    wings.push([[-30,-by*.35,sign*32],[110,-by*.7,sign*255],[170,-by*.7,sign*263],[80,-by*.45,sign*38]]);
+    wings.push([[-30,-by*.95,sign*32],[110,-by*1.35,sign*255],[170,-by*1.35,sign*263],[80,-by*.95,sign*38]]);
     wings.push([[225,10,sign*21],[290,18,sign*116],[323,18,sign*119],[292,5,sign*13]]);
   }
   const wingPaths=wings.map(p=>path(pointsPath(p.map(P)),'fill="var(--bg)"')).join('');
@@ -166,7 +166,7 @@ export function engineSVG(s) {
   const visible=clamp(-s.axes[2][0]*2.8);
   const hub=path(pointsPath(ring(cx-78.8,cy,cz,5.5,5.5,40).map(P)),'fill="var(--bg)"');
   const mount=path(pointsPath([[cx+3,cy+43,cz],[cx+9,-bySafe(s),cz],[cx+51,-bySafe(s),cz],[cx+48,cy+43,cz]].map(P)));
-  return `<g class="scene-line">${mount}${nacelle}${path(pointsPath(back),'opacity=".45"')}${path(pointsPath(front),'fill="var(--bg)"')}${path(pointsPath(inner))}<g opacity="${n(visible)}">${blades}${hub}</g></g>`;
+  return `<g class="scene-line"><g opacity="${n(1-s.orbit)}">${mount}</g>${nacelle}${path(pointsPath(back),'opacity=".45"')}${path(pointsPath(front),'fill="var(--bg)"')}${path(pointsPath(inner))}<g opacity="${n(visible)}">${blades}${hub}</g></g>`;
 }
 function bySafe(s){return s.bodyY*.65;}
 

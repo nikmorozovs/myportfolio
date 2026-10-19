@@ -10,8 +10,8 @@ export const cases = [
       ['Context & constraints','Regional availability was a key constraint in the choice of a chat platform. The work considered alternative solutions and the option of self-hosting.'],
       ['My role','My contribution covered comparing options, defining requirements, aligning the choice with stakeholders and preparing the release plan.'],
       ['Analysis & decisions','The comparison led to the selection of Chatwoot. Self-hosting was chosen to address regional availability.'],
-      ['Implementation','The agreed direction was translated into a release plan and a regional pilot. The pilot is the confirmed delivery stage; it is not presented as a complete rollout.'],
-      ['Confirmed outcome','Chatwoot was selected and taken into a self-hosted regional pilot. Financial savings and full-rollout outcomes are outside the confirmed scope.']
+      ['Implementation','The agreed direction was translated into a release plan and a regional pilot. The confirmed delivery stage is a regional pilot.'],
+      ['Confirmed outcome','Chatwoot was selected and taken into a self-hosted regional pilot.']
     ],
     flow:['Regional constraints','Compare options','Align on Chatwoot','Regional pilot']
   },
@@ -26,8 +26,8 @@ export const cases = [
       ['Context & constraints','The quality assessment system covers two departments and more than 30 people in total. Bonus-related information needed to remain private.'],
       ['My role','My work brought together assessment criteria, their weights and the rules used to interpret results. Comparison and synchronisation were part of the system.'],
       ['Analysis & decisions','The system uses weighted criteria rather than an unqualified total. Rules support comparison of results, while access to bonus information remains separate.'],
-      ['Implementation','Google Sheets was used for the assessment system, including result comparison and synchronisation. No internal spreadsheets or employee records are published here.'],
-      ['Confirmed outcome','The assessment system spans two departments and more than 30 people. These figures describe coverage; they do not represent a measured improvement in efficiency.']
+      ['Implementation','Google Sheets was used for the assessment system, including result comparison, synchronisation and privacy for bonus information.'],
+      ['Confirmed outcome','The assessment system spans two departments and more than 30 people.']
     ],
     flow:['Weighted criteria','Assessment rules','Private bonus data','Compare & sync']
   },
@@ -43,7 +43,7 @@ export const cases = [
       ['My role','I compared successful and unsuccessful records and investigated the sequence of the process. I then provided the findings to developers.'],
       ['Analysis & decisions','The comparison revealed an error in the order of process operations. This connected the failed records to a specific process-sequence issue.'],
       ['Implementation','Developers changed the process using the analytical findings. The analysis and the implementation are distinct contributions.'],
-      ['Confirmed outcome','The developers’ process change eliminated the defect and its associated manual corrections. No financial or percentage improvement is claimed.']
+      ['Confirmed outcome','The developers’ process change eliminated the defect and its associated manual corrections.']
     ],
     flow:['Compare records','Trace the sequence','Share the finding','Developers fix process']
   },
@@ -59,7 +59,7 @@ export const cases = [
       ['My role','Work on the tool brought together searching for presets, keeping favourites and automating updates.'],
       ['Analysis & decisions','Search and favourites provide two ways to retrieve presets. Automated updates support keeping the information current.'],
       ['Implementation','The resulting internal tool includes preset search, favourites and automated updates. Teams and management use it in their daily work.'],
-      ['Confirmed outcome','The tool is used daily by teams and management, with access available to 80+ customer-facing employees. This is not a count of 80+ daily active users, and no measured time saving for every employee is claimed.']
+      ['Confirmed outcome','The tool is used daily by teams and management, with access available to 80+ customer-facing employees.']
     ],
     flow:['Payment presets','Search & favourites','Automated updates','Daily team use']
   }
