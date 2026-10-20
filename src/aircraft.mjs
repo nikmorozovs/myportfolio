@@ -116,7 +116,7 @@ export function getAircraft(level='overview'){
  for(const sign of detail?[1]:[-1,1]){
   for(const w of PASSENGER_WINDOWS){
    if(detail&&(w.x< -395||w.x>75))continue;
-   curves.push({name:'passenger-window',caseIndex:sign===1?w.caseIndex:-1,normal:[0,.28,sign*.96],points:roundedRect(w.x,w.y,3.8,5,3.8*.38,5).map(([x,y])=>bodyPoint(x,y,sign))});
+   curves.push({name:'passenger-window',windowX:w.x,caseIndex:sign===1?w.caseIndex:-1,normal:[0,.28,sign*.96],points:roundedRect(w.x,w.y,3.8,5,3.8*.38,5).map(([x,y])=>bodyPoint(x,y,sign))});
   }
   for(const x of doorXs){if(detail&&(x< -390||x>70))continue;curves.push({name:'door',normal:[0,0,sign],points:roundedRect(x,1,12.5,29,3,7).map(([x,y])=>bodyPoint(x,y,sign,.19))});}
   if(!detail)for(const pane of [ [[-409,.64],[-386,.53],[-386,.98],[-402,1.04]], [[-382,.55],[-356,.73],[-356,1.15],[-382,1.02]] ]){
@@ -279,7 +279,7 @@ export function aircraftSVG(s,{hideCaseWindows=false,hideCabinWindows=false,wind
  const path2=ps=>`M${ps.map(p=>p.map(num).join(',')).join('L')}Z`;
  const mask=ps=>`<path d="${path2(screenHull(ps))}" fill="#F6F5F0" stroke="none"/>`;
  const loopMask=loops=>`<path d="${loops.map(ps=>path2(screenHull(ps))).join('')}" fill="#F6F5F0" fill-rule="evenodd" stroke="none"/>`;
- const line=ss=>`<path d="${segmentPath(ss,P,rect)}"/>`;
+ const line=(ss,attributes='')=>`<path${attributes} d="${segmentPath(ss,P,rect)}"/>`;
  const components=quickGeometry(model,axes),draw=[],blockers=[];
  for(const c of components){if(c.engine)blockers.push(mask(c.pylonMask),mask(c.mask));else if(c.maskLoops)blockers.push(loopMask(c.maskLoops));else blockers.push(mask(c.mask));}
  const farWing=components.find(c=>c.name==='wing--1'),fuselage=components.find(c=>c.name==='fuselage');
@@ -303,10 +303,14 @@ export function aircraftSVG(s,{hideCaseWindows=false,hideCabinWindows=false,wind
    draw.push(mask(c.mask),`<path class="scene-line" d="${path2(screenHull(c.mask))}"/><g class="scene-line">`);
    for(const curve of c.bodyCurves){
     if(hideCaseWindows&&curve.caseIndex>=0||hideCabinWindows&&curve.name==='passenger-window')continue;
+    const shiftedX=curve.windowX-windowPhase*AIRCRAFT.windowPitch;
+    // Keep the fixed door openings clear if an interrupted fractional pattern
+    // is carried back into a wider side view. These doors are outside S4's crop.
+    if(curve.name==='passenger-window'&&doorXs.some(x=>Math.abs(shiftedX-x)<9))continue;
     // A fractional interrupted carousel phase survives the handoff only in
     // the cabin pattern. Camera, airframe, wings and engines never move.
     const segments=windowPhase&&curve.name==='passenger-window'?curve.segments.map(ss=>ss.map(p=>bodyPoint(p[0]-windowPhase*AIRCRAFT.windowPitch,p[1],Math.sign(p[2])||1))):curve.segments;
-    draw.push(line(segments));
+    draw.push(line(segments,curve.name==='passenger-window'?` data-cabin-window="${num(shiftedX)}"`:''));
    }draw.push('</g>');
   }else draw.push(loopMask(c.maskLoops),`<g class="scene-line">${line(c.segments)}</g>`);
  }

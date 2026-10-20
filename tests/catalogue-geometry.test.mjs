@@ -31,3 +31,7 @@ test('the entire S4 range is 90 percent, with an unchanged entry zoom and a stab
 test('carousel residuals affect cabin presentation only and can be normalized outside the visible cabin crop',()=>{
  for(const [w,h]of sizes){const s=sceneAt(PHASE.pan+.01,w,h),snapshot=JSON.stringify({axes:s.axes,scale:s.scale,center:s.center,target:s.target,engine:s.engine});assert.equal(cabinPatternVisible(s),true);const a=aircraftSVG(s,{windowPhase:0}),b=aircraftSVG(s,{windowPhase:.37});assert.notEqual(a,b);assert.equal(JSON.stringify({axes:s.axes,scale:s.scale,center:s.center,target:s.target,engine:s.engine}),snapshot);assert.equal(cabinPatternVisible(sceneAt(PHASE.approach,w,h)),false);assert.equal(cabinPatternVisible(sceneAt(0,w,h)),false);}
 });
+test('carried fractional cabin windows never overlap fixed doors when reverse scroll widens the view',()=>{
+ const s=sceneAt(PHASE.zoom,1440,900);
+ for(const phase of [.01,.25,.5,.75,.99]){const svg=aircraftSVG(s,{windowPhase:phase}),windows=[...svg.matchAll(/data-cabin-window="([^"]+)" d="([^"]*)"/g)];assert.ok(windows.filter(x=>x[2]).length>25);for(const [,x]of windows)for(const door of [-326,-184,151,283])assert.ok(Math.abs(Number(x)-door)>=8.99);}
+});

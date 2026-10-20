@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-`npm test` runs **71 tests**, all passing. Existing geometry/layout coverage includes 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080. New checks cover:
+`npm test` runs **72 tests**, all passing. Existing geometry/layout coverage includes 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080. New checks cover:
 
 - A stationary fully opaque miniature tied to the runway before the roll; its first quarter is visible when acceleration begins. Quadratic world-space roll, last-quarter liftoff and matched position/velocity at departure.
 - Complete aircraft viewport bounds throughout accelerating departure/enlargement at desktop and phone sizes, deterministic reverse scrubbing and continuous camera boundaries.
@@ -19,13 +19,13 @@ Existing checks also pass for aircraft proportions/construction, many decorative
 
 Controller tests use minimal DOM/event/scroll contracts and deterministic clocks. They exercise logic and event ordering, **not CSS hit testing, native keyboard default actions, real inertia or browser rendering**. Native button markup supplies Enter/Space semantics; the actual device interaction still requires browser acceptance.
 
-`npm run build` emits six HTML pages: home, four real case directories and 404. `npm run check` validates **157 local links/assets** and **527 KiB** output. Built-DOM checks include shared route/heading coordinates, four fallback case links, one body-level preview portal, linked project titles with inseparable arrows, four competency controls/panels, carousel arrows, accessible ID references, safe-area header structure, About track and Contact/footer order. All line breaks in generated HTML retain real separators. The runtime project records match the published JSON config. Private input documents/fonts remain excluded; only an explicitly configured publishable CV PDF is allowed.
+`npm run build` emits six HTML pages: home, four real case directories and 404. `npm run check` validates **157 local links/assets** and **535 KiB** output. Built-DOM checks include shared route/heading coordinates, four fallback case links, one body-level preview portal, linked project titles with inseparable arrows, four competency controls/panels, carousel arrows, accessible ID references, safe-area header structure, About track and Contact/footer order. All line breaks in generated HTML retain real separators. The runtime project records match the published JSON config. Private input documents/fonts remain excluded; only an explicitly configured publishable CV PDF is allowed.
 
 ## Projection and typography evidence
 
 Actual SVG views were rasterised and inspected at 1440×900 and 390×844: convergence with a title outline from the shipped Unbounded font, parked miniature, roll start/midpoint, liftoff and enlargement. The title sits between the branches; the aircraft remains above the runway and leaves while its last quarter is visible. These are **geometry/font diagnostics**, not browser screenshots.
 
-Forced overview/detail renders at the same handoff pose were compared at all ten viewport sizes, both at normal cabin phase and a fractional interrupted-carousel phase of 0.37. All **20 pairs were pixel-identical**, with zero changed channels. Projected camera/engine coordinates are unchanged by carousel phase. Normalization is delayed until cabin curves are outside the crop.
+Forced overview/detail renders at the same handoff pose were compared at all ten viewport sizes, both at normal cabin phase and a fractional interrupted-carousel phase of 0.37. All **20 pairs were pixel-identical**, with zero changed channels. Projected camera/engine coordinates are unchanged by carousel phase. Normalization is delayed until cabin curves are outside the crop. A final reverse-view check also keeps shifted cabin windows out of fixed door openings.
 
 Shipped-font advance measurements checked the title pocket, small competency chevrons and the linked title's last-word/arrow group. A compact linked-title size was reduced after finding a small overflow at the lowest landscape preview width. This verifies measured text widths, **not browser line boxes, copied clipboard text or CSS clipping**. Real spaces are asserted in generated text; About's text reads `The person behind the process` when line breaks are removed.
 
