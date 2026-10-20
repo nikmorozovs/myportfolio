@@ -59,7 +59,7 @@
     "chapters": [
       "THE STARTING POINT",
       "CONNECTED COMPETENCIES",
-      "READY FOR TAKEOFF",
+      "TAKING FLIGHT",
       "A CHANGE OF PERSPECTIVE",
       "SELECTED WORK",
       "UNDER THE WING",
@@ -267,13 +267,16 @@
     "whatsapp": {
       "label": "WhatsApp",
       "pending": "Link pending",
-      "hint": "A verified WhatsApp link has not been provided"
+      "hint": "A verified WhatsApp link has not been provided",
+      "href": null
     },
     "cv": {
       "title": "Looking for my CV?",
       "text": "The updated download will be added here.",
       "label": "Request by email",
-      "subject": "CV request"
+      "subject": "CV request",
+      "href": null,
+      "download": false
     }
   },
   "footer": {

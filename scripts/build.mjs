@@ -30,8 +30,8 @@ export async function buildSite({contentFile=path.join(root,'src/content.json'),
   <div class="section-meta"><span class="eyebrow">${e(c.eyebrow)}</span><span class="location"><i aria-hidden="true"></i>${e(I.location)}</span></div>
   <h2 id="contact-title">${t(c.title)}</h2>
   <a class="email-link" href="mailto:${e(c.email)}">${e(c.email)} ${arrow}</a>
-  <div class="contact-bottom"><div class="socials">${c.links.map(l=>`<a href="${safeURL(l.href)}" target="_blank" rel="noopener noreferrer">${e(l.label)} ${arrow}</a>`).join(' ')} <span class="pending-link" title="${e(c.whatsapp.hint)}">${e(c.whatsapp.label)} <span>${e(c.whatsapp.pending)}</span></span></div>
-   <div class="cv-note" id="cv"><p>${e(c.cv.title)}</p> <span>${e(c.cv.text)}</span> <a href="mailto:${e(c.email)}?subject=${e(encodeURIComponent(c.cv.subject))}">${e(c.cv.label)} ${arrow}</a></div></div>
+  <div class="contact-bottom"><div class="socials">${c.links.map(l=>`<a href="${safeURL(l.href)}" target="_blank" rel="noopener noreferrer">${e(l.label)} ${arrow}</a>`).join(' ')} ${c.whatsapp.href?`<a href="${safeURL(c.whatsapp.href)}" target="_blank" rel="noopener noreferrer">${e(c.whatsapp.label)} ${arrow}</a>`:`<span class="pending-link" title="${e(c.whatsapp.hint)}">${e(c.whatsapp.label)} <span>${e(c.whatsapp.pending)}</span></span>`}</div>
+   <div class="cv-note" id="cv"><p>${e(c.cv.title)}</p> <span>${e(c.cv.text)}</span> <a href="${c.cv.href?safeURL(c.cv.href):`mailto:${e(c.email)}?subject=${e(encodeURIComponent(c.cv.subject))}`}"${c.cv.download?' download':''}>${e(c.cv.label)} ${arrow}</a></div></div>
  </section>`;}
  const initial=sceneSVG(sceneAt(0,1440,900)),a=data.about,r=data.recommendation,k=data.keyViews;
  const runtime=JSON.stringify({ui:U,scenes:data.scenes,competencies:data.competencies,cases}).replaceAll('<','\\u003c');

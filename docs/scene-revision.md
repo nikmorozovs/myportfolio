@@ -1,5 +1,7 @@
 # Aviation scene revision
 
+Historical first revision. See [catalogue-revision.md](catalogue-revision.md) and [storyboard.md](storyboard.md) for the current departure, click-only preview, carousel and content rules.
+
 The 19 October follow-up takes precedence over the first implementation where the requirements differ. The site, case URLs, factual copy, palette and Pages deployment remain the existing project.
 
 ## Code review

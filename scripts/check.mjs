@@ -70,7 +70,8 @@ if(find('about')?.parent!==find('about-track'))failures.push('About must use one
 if(nodes.filter(n=>has(n,'about')).length!==1)failures.push('About content must not be duplicated for the reading hold');
 if(nodes.indexOf(find('contact'))>=nodes.indexOf(find('site-footer')))failures.push('Contact must precede its footer');
 if(stack.length)failures.push('Unclosed home markup');
-if(files.some(x=>/\.(docx|pdf|ttf)$/i.test(x)))failures.push('Unexpected input or source font in deployment');
+const approvedCV=content.contact.cv.href?.startsWith('assets/')?path.join(root,content.contact.cv.href):null;
+if(files.some(x=>/\.(docx|ttf)$/i.test(x)||/\.pdf$/i.test(x)&&x!==approvedCV))failures.push('Unexpected input document or source font in deployment');
 if(failures.length){console.error(failures.join('\n'));process.exit(1);}
 const bytes=(await Promise.all(files.map(async x=>(await stat(x)).size))).reduce((a,b)=>a+b,0);
 console.log(`PASS: ${html.length} HTML pages, ${checked} local links/assets and ${Math.round(bytes/1024)} KiB static output.`);

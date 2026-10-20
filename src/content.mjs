@@ -8,7 +8,7 @@ export function textHTML(value){
  return value.lines.map(escapeHTML).join(` ${br}`);
 }
 export const formatText=(value,tokens)=>value.replace(/\{([a-z]+)\}/g,(all,key)=>tokens[key]??all);
-export function safeURL(value){if(!/^(https:\/\/|mailto:|#)/.test(value))throw new Error('Unsupported content URL');return escapeHTML(value);}
+export function safeURL(value){if(!/^(https:\/\/|mailto:|#)/.test(value)&&!/^assets\/[a-zA-Z0-9_/-]+\.[a-z0-9]+$/.test(value))throw new Error('Unsupported content URL');return escapeHTML(value);}
 export function validateContent(data){
  if(data.schemaVersion!==1)throw new Error('Unsupported content schema');
  for(const [key,count]of [['cases',4],['competencies',4]]){
@@ -18,6 +18,8 @@ export function validateContent(data){
  for(const c of data.cases){if(c.slug!==c.id)throw new Error('Project ID must retain its published route slug');if(!['chat','quality','data','tool'].includes(c.icon))throw new Error('Unknown project icon');}
  const visit=value=>{if(!value||typeof value!=='object')return;if('lines'in value&&(!Array.isArray(value.lines)||!value.lines.length||value.lines.some(x=>typeof x!=='string')||value.break&&!['always','desktop'].includes(value.break)))throw new Error('Invalid text lines');for(const v of Object.values(value))visit(v);};visit(data);
  for(const link of data.contact.links)safeURL(link.href);safeURL(data.footer.sourceURL);
+ if(data.contact.cv.href)safeURL(data.contact.cv.href);
+ if(data.contact.whatsapp.href)safeURL(data.contact.whatsapp.href);
  if(!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(data.contact.email))throw new Error('Invalid contact address');
  return data;
 }

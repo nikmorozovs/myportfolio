@@ -1,5 +1,7 @@
 # Scroll and flight effects revision
 
+Historical 19 October calibration. The later [20 October catalogue/content revision](catalogue-revision.md) supersedes its S4 length, departure and preview interaction rules. [storyboard.md](storyboard.md) contains the current boundaries.
+
 Follow-up to the existing 19 October implementation. Preserve the shared intro/route world, scroll-only camera, matched A/B aircraft, constant copper contours, four case entrances, preview portal and existing factual copy. This revision supersedes the former outward S6 particle flow.
 
 ## State mapping before implementation

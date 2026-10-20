@@ -1,69 +1,64 @@
-# Verification
+# Verification — 20 October 2026
 
 ## Automated checks
 
-`npm test` runs **44 tests**, all passing. Geometry/layout checks cover 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080, including two landscape phone layouts.
+`npm test` runs **71 tests**, all passing. Existing geometry/layout coverage includes 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080. New checks cover:
 
-- Static route shape, shared scroll translation, fully opaque runway entry, monotonic takeoff travel and scale.
-- Fixed aircraft dimensions, compact engine proportions, pylon intersections with both the wing and nacelle, two engines, numerous cabin windows and exactly four selected case windows.
-- Matching A/B window curves and engine anchors, with differing geometry outside the switch crop.
-- Continuous camera and projected anchors at every phase boundary; top nose-down, side nose-left, 90° engine orbit and circular frontal inlet.
-- Deterministic reverse/fast scrubbing and stopping, fully revealed stable S4 windows throughout progress 8–10, preserved transition durations, and a completely absent engine at S7.
-- Both ends of the cabin-to-engine connection remain visible during the intermediate framing; the full aircraft does not return.
-- Centred preview bounds, proportions, padding and pointer-transfer corridors across all tested viewport sizes.
-- Work targets inside the stable interval, header/safe-area-aware preview bounds, About's 0.75-viewport reserve for both short and long text, and enough native range for Contact alignment.
-- Absolute time-based actual scroll speed, exponential attack/release, velocity cap, inertial decay, 30/120 Hz consistency and sign-independent response.
-- Screen-bounded common aircraft vibration, continuous phase through the A/B switch, frequency-only acceleration, zero S4 amplitude and unchanged camera poses.
-- Interruptible navigation, actual intermediate page positions, 220–820 ms duration, retargeting, manual-gesture cancellation and reduced-motion direct jumps.
-- Inward S6 particles following the projected moving engine axis, S4 no-spawn with survivors retained, smooth restart, bounded counts, oscillation without bursts and end-of-scene drain. 30/120 FPS trajectories agree within the test tolerance.
-- Immutable 2× particle calibration. Simulated visible population at the same viewport stays within 1.82–2.18× the former calibration at scroll speeds 0, 1200 and 4800 px/s, on desktop and phone. This is a model-space density comparison, not a perceptual browser measurement.
-- Half-width/half-length runway, exact shared marking/clip bounds, tangent-matched thin-route expansion and unchanged global line width.
-- Far-engine masks checked against reference wing-ray occlusion at 17 top-to-side angles while retaining visible portions. A common aircraft group contains geometry, masks and the opaque particle blocker.
-- Clockwise fan-blade rotation from the front, inlet clipping, monotonic reversible scroll angle and continued rotation through the last visible fade frame; the rim stays fixed.
-- Preview controller resize, rapid close/reopen cancellation, delayed keyboard focus, Escape, first coarse-pointer activation, explicit navigation and pointer-leave intent.
+- A stationary fully opaque miniature tied to the runway before the roll; its first quarter is visible when acceleration begins. Quadratic world-space roll, last-quarter liftoff and matched position/velocity at departure.
+- Complete aircraft viewport bounds throughout accelerating departure/enlargement at desktop and phone sizes, deterministic reverse scrubbing and continuous camera boundaries.
+- An empty heading pocket between every sampled route branch, above convergence; the real Ready for takeoff heading shares the translated route world and has no late caption duplicate.
+- Complete S4 compression from 4.15 to 3.735 units (90%), preserved entry, stable 1.585-unit ready interval and header-aware Work targets in its interior. All downstream boundaries move by −0.415.
+- Periodic carousel identity over positive/negative loops, four distinct main projects, inert inaccessible copies, partial neighbours at both viewport edges and matching names/icons after arrow movement.
+- Dominant horizontal touch intent versus native vertical movement, drag threshold, pointer capture/release outside the source, cancellation, section exit, resize, interrupted snap and post-drag click suppression. Reduced-motion ordering, static-flow visibility and return-state restoration are covered.
+- Click-only previews: hover/focus/departure do not toggle them; the opening click cannot outside-close itself. Correct content and destination follow a stable project ID after permutation. Selected ID persists while the S4 presentation is hidden, then restores on reverse entry.
+- One preview, close button/outside click/Escape, carousel-arrow exclusion, lock state, fixed final text width, keyboard reveal/focus, resize and stale-timer cancellation.
+- Independent competency hover region, 210 ms delayed leave, touch/keyboard toggles, outside tap, Escape, one open panel, horizontal viewport bounds and close-on-S0-exit.
+- Single JSON validation, stable project/competency IDs, ordinary whitespace before adaptive breaks and literal HTML escaping. A test rebuilds with edited heading, paragraph, indicator, project/full-case copy, runtime caption, accessible name and configured contact/CV destinations. Components stay unchanged. Embedded JSON safely retains a literal `</script>` string.
 
-Preview/navigation controller tests use minimal DOM/scroll contracts and deterministic clocks. They verify state, cancellation and timer behaviour, **not browser rendering, hit testing, native event dispatch or real inertia**.
+Existing checks also pass for aircraft proportions/construction, many decorative windows and four case anchors, two engines, pylon attachment, A/B matching, far-engine occlusion at 17 intermediate angles, camera continuity, connected pan/orbit, clockwise inlet-clipped fan through the last visible fade, reading reserves, Contact alignment, interruptible navigation, bounded speed/vibration, immutable 2× inward particles and natural S4/end drain. 30/120 Hz motion/particle comparisons remain covered.
 
-`npm run build` emits six real HTML pages: home, four case directories and 404, totalling **482 KiB** with assets. `npm run check` validates **150 local page/anchor/asset/font/module references**. It also checks the built hierarchy: shared intro/skills/route parent, a single body-level preview portal, exactly four case entrances, `viewport-fit=cover`, a body-level header with separate opaque surface/content, one About section in a real reading track, and Contact preceding the footer. All checks pass.
+Controller tests use minimal DOM/event/scroll contracts and deterministic clocks. They exercise logic and event ordering, **not CSS hit testing, native keyboard default actions, real inertia or browser rendering**. Native button markup supplies Enter/Space semantics; the actual device interaction still requires browser acceptance.
 
-## Visual geometry and layout evidence
+`npm run build` emits six HTML pages: home, four real case directories and 404. `npm run check` validates **157 local links/assets** and **527 KiB** output. Built-DOM checks include shared route/heading coordinates, four fallback case links, one body-level preview portal, linked project titles with inseparable arrows, four competency controls/panels, carousel arrows, accessible ID references, safe-area header structure, About track and Contact/footer order. All line breaks in generated HTML retain real separators. The runtime project records match the published JSON config. Private input documents/fonts remain excluded; only an explicitly configured publishable CV PDF is allowed.
 
-The actual SVG renderer was rasterised and inspected at desktop 1440×900 and phone 390×844 dimensions, including tangled route/convergence, the shortened filled runway/expansion, takeoff, three intermediate aircraft rotations, side view, window zoom, cabin-to-engine framing, intermediate orbit, inlet approach and fade. Wing/tail masks follow their actual projected boundaries; the far-engine mask now also enforces wing/fuselage occlusion throughout rotation. A separate inward-streak diagnostic checked opaque engine overlap. These are geometry projections, not browser page screenshots.
+## Projection and typography evidence
 
-Forced overview/detail renderings at the **same handoff pose** were rasterised at all ten tested viewport sizes. Every pair was pixel-identical: zero changed channels. This tests the model switch itself in both directions; neighbouring camera continuity is checked numerically.
+Actual SVG views were rasterised and inspected at 1440×900 and 390×844: convergence with a title outline from the shipped Unbounded font, parked miniature, roll start/midpoint, liftoff and enlargement. The title sits between the branches; the aircraft remains above the runway and leaves while its last quarter is visible. These are **geometry/font diagnostics**, not browser screenshots.
 
-An offline line-wrap estimate using the shipped Onest font metrics found spare vertical room for all four previews across those viewports, including compact landscape copy. This is a fit estimate, not a browser typography screenshot.
+Forced overview/detail renders at the same handoff pose were compared at all ten viewport sizes, both at normal cabin phase and a fractional interrupted-carousel phase of 0.37. All **20 pairs were pixel-identical**, with zero changed channels. Projected camera/engine coordinates are unchanged by carousel phase. Normalization is delayed until cabin curves are outside the crop.
 
-Export reproducible geometry frames with:
+Shipped-font advance measurements checked the title pocket, small competency chevrons and the linked title's last-word/arrow group. A compact linked-title size was reduced after finding a small overflow at the lowest landscape preview width. This verifies measured text widths, **not browser line boxes, copied clipboard text or CSS clipping**. Real spaces are asserted in generated text; About's text reads `The person behind the process` when line breaks are removed.
+
+Reproduce projection frames with:
 
 ```sh
 npm run frames -- 1440 900
 npm run frames -- 390 844
 ```
 
-Each command writes 22 SVG frames and a progress manifest under ignored `qa-output/scene-<width>x<height>/`, including forced A/B handoff frames. These omit HTML text, previews and time-driven particles by design.
+Each command writes **25 SVGs** and a phase manifest to ignored `qa-output/scene-<width>x<height>/`. They omit HTML controls/previews and time-driven particles by design. Additional temporary diagnostics and comparison results are also excluded from Git.
 
 ## Browser verification limit
 
-The Sites `control-browser` capability is absent. Under its preview instructions, no preview server or alternative browser automation was started. Desktop/mobile browser layout, CSS transitions, native mouse/touch/keyboard behaviour, real-device performance, BFCache and subjective perceived pace remain **unverified in a browser**. Source, controller and mathematical checks do not replace that acceptance pass.
+The managed Sites preview could not start: `sites-previewd mailbox is unavailable at /tmp/sites-previewd/requests`. `sites-preview status` returned the same infrastructure error. The prescribed preview supervisor is unavailable; no alternative server or browser automation was substituted.
+
+Desktop/mobile browser layout, actual mouse/touch/keyboard default behaviour, scroll inertia, clipboard copying, Safari safe areas/toolbars, real-device performance, BFCache and perceived animation pace remain **unverified in a browser**. Passing numerical/controller checks and HTTP responses do not replace that acceptance pass.
 
 ## Remaining browser acceptance pass
 
-1. Scroll slowly, quickly and with inertia in both directions; stop at intermediate poses. S0 text and route must leave together. Confirm the thin route, smooth expansion and copper runway are continuous, markings remain inside its half-length body, and the aircraft follows it at full opacity.
-2. Inspect nose/cockpit, attached wings and both engines throughout the top-to-side turn. Check far-engine occlusion at intermediate angles, constant line width, common subpixel vibration and reversible A/B handoff. Faster scrolling should change vibration frequency without increasing displacement.
-3. Open every preview. Transfer the pointer to the centred card, leave it, reopen quickly, test Tab/Enter, Escape, first tap and explicit Open case. Check backdrop order, final text wrapping and safe padding.
-4. Resize/orient the viewport with a preview open; keep it visible and correctly laid out. Scroll through the card without a scroll lock.
-5. Compare particle visibility/density at matching viewport/speeds. Check acceleration/deceleration, a nonzero stationary speed and natural S4 drain without a layer fade. Restart must be gradual. At S6 streaks must travel inward behind the moving engine, including during reverse scroll. Verify no new particles in About.
-6. Check the connected engine pan, 90° horizontal orbit and slight descent. During frontal enlargement and fade, the clipped blades must rotate clockwise while the casing stays fixed, until every contour disappears. Stop/reverse scroll to test angle reversibility.
-7. Check the extra fully interactive S4 reading range and the About reserve with short/long copy; no engine fragment may be held. Navigate Work/About/Contact from above, below and repeatedly. Interrupt a jump with a gesture and redirect it with another link. Work must enter the stable range with all four labels/icons visible without prior manual scene traversal.
-8. Check the opaque header at viewport top with expanded/collapsed Safari bars, safe areas, bidirectional scroll and orientation change. Verify Contact aligns below the header, fills the available screen and has spare space before the footer, including at the page's maximum scroll.
-9. Direct-open/refresh every case, navigate sections/other cases and return to catalogue. Check Back/Forward and reduced motion/JavaScript-disabled fallbacks.
-10. Recheck CV, About, recommendation and WhatsApp once approved inputs arrive.
+1. Slowly/quickly scroll both ways and stop at intermediate states. Confirm the already parked miniature, accelerating visible roll, last-quarter departure, continuous reverse relationship and full opacity. Check route/aircraft layer order.
+2. Inspect the world-bound Ready for takeoff heading on wide/narrow screens, before departure; no branch should cross letters. Check all original aircraft/engine transitions and constant contours.
+3. In S4, hover/focus without activation: no preview should open. Click or Enter/Space: open one preview without navigation. Pointer departure must not close it. Test close button, outside click, Escape and heading-link navigation/focus. Confirm dimming, padding and stable text wrapping.
+4. Loop arrows in both directions; drag with mouse and swipe horizontally. Release outside a window, cancel, resize, interrupt a snap and try a vertical swipe. There must be no post-drag opening. Side copies remain inert; exactly four different projects remain accessible. Check each linked destination after several loops.
+5. Keep a preview selected and scroll out of S4: the layer/backdrop must disappear; reverse entry must restore the same project. Repeat through Work navigation from above/below and after a case return. Arrows must not move or outside-close an open card.
+6. Exit/re-enter while dragging or snapping. Inspect the periodic cabin handoff, including reverse S3 entry; no camera/engine movement or visible window reset may occur.
+7. Test each S0 explanation with hover, pointer transfer, delayed leave, tap, outside tap, Tab and Enter/Space. Panels stay below their own headings, inside the horizontal viewport and do not shift lines/scene length. Short screens may scroll panel content. Leave S0 and confirm every explanation closes.
+8. Resize About on phones, copy its heading and inspect real word separators. Repeat for multi-line headings/compound text. Verify the S7 reading reserve, no engine remnant and normal long-text scrolling.
+9. Retest inward particles, speed response, zero S4 spawning/vibration, natural drain, fan rotation through disappearance, header with expanded/collapsed Safari bars and Contact's full available screen. Preserve manual navigation interruption and reduced motion.
+10. Direct-open/refresh all four cases, test Back/Forward, no-JavaScript fallback links and error fallback catalogue. Replace editorial placeholders only with approved materials.
 
 ## Publication
 
 Live site: https://nikmorozovs.github.io/myportfolio/
 
-The latest flight/scroll implementation is commit `5b2d9442e386d517c1cfc93a46e37d0522087ffd`. Its [GitHub Actions run](https://github.com/nikmorozovs/myportfolio/actions/runs/39287896256) completed successfully, including tests, build, link checks and Pages deployment. Documentation updates use the same [workflow](https://github.com/nikmorozovs/myportfolio/actions/workflows/pages.yml). Publication is automatic on `main`; no added token or external hosting service is required.
-
-Live HTTP checks on 19 October 2026 confirmed the home page, all four direct case routes and 15 scripts/styles/views/fonts: **20 resources returned 200 and matched the local build's SHA-256 hashes**. One temporary 503 on the internal-tool route returned 200 with the matching hash on retry. The case route without a trailing slash redirected to its directory URL; an unknown route returned 404. These checks confirm served files/routes, not JavaScript execution or visual browser behaviour.
+The feature commit `af71611bc3b740ee5b33e45b2cad28c0845505b5` passed [GitHub Actions and Pages deployment](https://github.com/nikmorozovs/myportfolio/actions/runs/39388516460). Live checks on 20 October confirmed **24 resources returned 200 with matching build SHA-256 hashes**: home, four direct cases and 19 modules/config/styles/views/fonts. The no-trailing-slash case route redirected correctly; an unknown route returned 404. Final editorial/config documentation uses the same automatic workflow on `main`.
