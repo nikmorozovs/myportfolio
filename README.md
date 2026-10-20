@@ -66,14 +66,14 @@ The ordinary workflow `GITHUB_TOKEN` cannot enable a new Pages site. The connect
 
 **Edit `src/content.json`**, saved as UTF-8. It supplies navigation, scene labels/captions, identity, indicators, competencies/explanations, window labels, project previews/full case text, diagram captions, About, recommendation, contacts, footer, 404 and accessible control names. There is no second editable copy in components: the build renders HTML and embeds runtime records from this same file. Geometry, coordinates and animation timings stay in the implementation modules.
 
-For example, edit the existing `work.title` heading, `about.paragraphs[0]` paragraph and `hero.facts[0].value` indicator. The following is a **partial example**, not a replacement for the full file:
+For example, edit the existing `work.title` heading, `about.paragraphs[0]` paragraph and `hero.facts[1].value` indicator. The following is a **partial example**, not a replacement for the full file:
 
 ```json
 {
   "work": { "title": "Selected work" },
   "about": { "paragraphs": ["Write the approved personal introduction here."] },
   "hero": {
-    "facts": [{ "id": "experience", "value": "7", "suffix": " years" }]
+    "facts": [{ "id": "tool-access", "value": "80", "suffix": "+" }]
   }
 }
 ```
@@ -81,6 +81,8 @@ For example, edit the existing `work.title` heading, `about.paragraphs[0]` parag
 Keep the other fields in those records. Use confirmed values for indicators. Plain strings wrap naturally; structured text such as `{ "lines": ["The person", "behind the", "process"] }` adds line breaks **with real spaces between words**. `"break": "desktop"` makes those breaks responsive. Keep existing field types: window names, preview summaries, metadata and labels are plain strings; the `lines` form is used for multi-line headings and can also format About/full-case paragraph entries. Strings are escaped; HTML is displayed as literal text. Links use supported URL fields rather than arbitrary HTML. SEO and accessible-name templates accept the documented tokens `{name}`, `{role}` or `{project}` where already used.
 
 Keep the four project `id`/`slug` pairs and competency IDs stable. The carousel, preview templates and routes all refer to those same records; icons use the existing `chat`, `quality`, `data`, `tool` identifiers. The build emits `cases/<slug>/index.html`, so direct opening and refresh need no SPA fallback.
+
+Experience is automatic: `hero.facts[0].start` stores `{ "year": 2019, "month": 7 }` (months are 1–12). The browser computes completed calendar years once per page load, using its current local date; no timer or annual rebuild is needed. The no-JavaScript value is computed on the build date. Keep the `experience` ID and edit its start date rather than adding a manual `value`. Other indicators keep their editable `value` fields.
 
 After editing, run `npm test`, `npm run build` and `npm run check`. A **new build and publication are required**. Pushing the JSON change to `main` runs that workflow and updates GitHub Pages automatically. Do not edit generated `dist/` files.
 

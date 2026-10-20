@@ -110,7 +110,10 @@ export function routeMapSVG(width,height,unit=scrollUnit(width,height)){
   const left=i%2===0,edge=X(left?.255:.745)+(left?-offset:offset),outer=X(left?.18:.82),turnY=Y(1.72+i*.025);
   // Keep a deliberate empty pocket around the real heading, not a text mask.
   p[6]=[outer,turnY];
-  paths.push(`<path opacity="${offset?.5:1}" d="M${p[0].map(num)}C${p[1].map(num)} ${p[2].map(num)} ${p[3].map(num)}C${p[4].map(num)} ${p[5].map(num)} ${p[6].map(num)}C${num(edge)},${num(Y(1.86))} ${num(edge)},${num(Y(1.98))} ${num(edge)},${num(Y(2.04))}C${num(edge)},${num(Y(2.14))} ${num(X(.5))},${num(Y(2.10))} ${num(X(.5))},${num(Y(2.20))}"/>`);
+  // Collinear forward-facing handles remove corners without moving the knots.
+  p[4]=p[3].map((v,j)=>2*v-p[2][j]);
+  const exit=p[6].map((v,j)=>v+(v-p[5][j])*.35);
+  paths.push(`<path opacity="${offset?.5:1}" d="M${p[0].map(num)}C${p[1].map(num)} ${p[2].map(num)} ${p[3].map(num)}C${p[4].map(num)} ${p[5].map(num)} ${p[6].map(num)}C${exit.map(num)} ${num(edge)},${num(Y(1.98))} ${num(edge)},${num(Y(2.04))}C${num(edge)},${num(Y(2.14))} ${num(X(.5))},${num(Y(2.10))} ${num(X(.5))},${num(Y(2.20))}"/>`);
  }});
  const r=runwayLayout(width,height,unit),half=r.width/2,blend=r.start-r.blendStart,n=num;
  const ribbon=`M${n(r.cx-.75)},${n(r.blendStart)}C${n(r.cx-.75)},${n(r.blendStart+blend*.35)} ${n(r.cx-half)},${n(r.start-blend*.35)} ${n(r.cx-half)},${n(r.start)}V${n(r.end)}H${n(r.cx+half)}V${n(r.start)}C${n(r.cx+half)},${n(r.start-blend*.35)} ${n(r.cx+.75)},${n(r.blendStart+blend*.35)} ${n(r.cx+.75)},${n(r.blendStart)}Z`;

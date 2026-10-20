@@ -98,7 +98,10 @@
     "facts": [
       {
         "id": "experience",
-        "value": "7",
+        "start": {
+          "year": 2019,
+          "month": 7
+        },
         "suffix": " years",
         "label": {
           "lines": [

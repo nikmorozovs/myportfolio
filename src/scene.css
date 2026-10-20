@@ -65,7 +65,7 @@ html{scroll-behavior:auto}
 
 /* 20 October: world-bound takeoff heading, independent S0 explanations. */
 .ready-heading{display:none}
-.motion-ready .ready-heading{display:block;position:absolute;left:50%;transform:translateX(-50%);text-align:center;font-size:clamp(20px,3.2vw,46px);line-height:1.18;color:var(--dark);pointer-events:none;z-index:2}
+.motion-ready .ready-heading{display:block;position:absolute;left:50%;transform:translateX(-50%);text-align:center;font-size:clamp(20px,3.2vw,46px);line-height:1.18;pointer-events:none;z-index:2}
 .motion-ready .skills{pointer-events:auto}
 .skills>li{position:relative;isolation:isolate}
 .competency-toggle{font:inherit;line-height:inherit;text-align:inherit;color:inherit;background:none;border:0;padding:0 0 8px;max-width:100%;cursor:pointer}

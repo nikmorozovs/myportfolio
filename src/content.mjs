@@ -7,6 +7,17 @@ export function textHTML(value){
  // A real separator remains when a responsive line break is hidden or copied.
  return value.lines.map(escapeHTML).join(` ${br}`);
 }
+/** Preserve editorial line breaks; render the existing final dot exactly once. */
+export function headingHTML(value,accent=''){
+ const lines=typeof value==='string'?[value]:[...value.lines],last=lines.length-1;
+ const dot=lines[last].endsWith('.')?'.':accent;
+ if(dot)lines[last]=lines[last].replace(/\.+$/,'');
+ return textHTML(typeof value==='string'?lines[0]:{...value,lines})+(dot?`<span class="heading-dot">${escapeHTML(dot)}</span>`:'');
+}
+export function completedYears(start,date=new Date()){
+ return Math.max(0,date.getFullYear()-start.year-(date.getMonth()+1<start.month?1:0));
+}
+export const metricValue=(metric,date=new Date())=>metric.start?String(completedYears(metric.start,date)):metric.value;
 export const formatText=(value,tokens)=>value.replace(/\{([a-z]+)\}/g,(all,key)=>tokens[key]??all);
 export function safeURL(value){if(!/^(https:\/\/|mailto:|#)/.test(value)&&!/^assets\/[a-zA-Z0-9_/-]+\.[a-z0-9]+$/.test(value))throw new Error('Unsupported content URL');return escapeHTML(value);}
 export function validateContent(data){
@@ -17,6 +28,8 @@ export function validateContent(data){
  }
  for(const c of data.cases){if(c.slug!==c.id)throw new Error('Project ID must retain its published route slug');if(!['chat','quality','data','tool'].includes(c.icon))throw new Error('Unknown project icon');}
  const visit=value=>{if(!value||typeof value!=='object')return;if('lines'in value&&(!Array.isArray(value.lines)||!value.lines.length||value.lines.some(x=>typeof x!=='string')||value.break&&!['always','desktop'].includes(value.break)))throw new Error('Invalid text lines');for(const v of Object.values(value))visit(v);};visit(data);
+ const start=data.hero.facts.find(f=>f.id==='experience')?.start;
+ if(!start||!Number.isInteger(start.year)||start.year<1||!Number.isInteger(start.month)||start.month<1||start.month>12)throw new Error('Invalid experience start year/month');
  for(const link of data.contact.links)safeURL(link.href);safeURL(data.footer.sourceURL);
  if(data.contact.cv.href)safeURL(data.contact.cv.href);
  if(data.contact.whatsapp.href)safeURL(data.contact.whatsapp.href);

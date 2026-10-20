@@ -2,7 +2,9 @@
 
 ## Automated checks
 
-`npm test` runs **72 tests**, all passing. Existing geometry/layout coverage includes 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080. New checks cover:
+`npm test` runs **73 tests**, all passing. The local heading/favicon/experience/route update ran the existing suite, build and resource check once. The five experience dates (June/July/October 2026 and June/July 2027) produce 6/7/7/7/8 completed years. The existing content test checks one final accent dot and real word separators for all six main headings; the route pocket test now also checks forward tangent continuity at every cubic join on wide/narrow layouts. Favicon links use the renamed `favicon-nm.svg` on home and case pages; its shipped-font outlines were inspected at 16/32/64 px using an offline glyph raster diagnostic, not a browser screenshot.
+
+Existing geometry/layout coverage includes 320×568, 360×640, 390×844, 568×320, 640×900, 768×1024, 844×390, 1280×720, 1440×900 and 1920×1080. Checks cover:
 
 - A stationary fully opaque miniature tied to the runway before the roll; its first quarter is visible when acceleration begins. Quadratic world-space roll, last-quarter liftoff and matched position/velocity at departure.
 - Complete aircraft viewport bounds throughout accelerating departure/enlargement at desktop and phone sizes, deterministic reverse scrubbing and continuous camera boundaries.
@@ -19,7 +21,7 @@ Existing checks also pass for aircraft proportions/construction, many decorative
 
 Controller tests use minimal DOM/event/scroll contracts and deterministic clocks. They exercise logic and event ordering, **not CSS hit testing, native keyboard default actions, real inertia or browser rendering**. Native button markup supplies Enter/Space semantics; the actual device interaction still requires browser acceptance.
 
-`npm run build` emits six HTML pages: home, four real case directories and 404. `npm run check` validates **157 local links/assets** and **535 KiB** output. Built-DOM checks include shared route/heading coordinates, four fallback case links, one body-level preview portal, linked project titles with inseparable arrows, four competency controls/panels, carousel arrows, accessible ID references, safe-area header structure, About track and Contact/footer order. All line breaks in generated HTML retain real separators. The runtime project records match the published JSON config. Private input documents/fonts remain excluded; only an explicitly configured publishable CV PDF is allowed.
+`npm run build` emits six HTML pages: home, four real case directories and 404. `npm run check` validates **157 local links/assets** and **541 KiB** output. Built-DOM checks include shared route/heading coordinates, four fallback case links, one body-level preview portal, linked project titles with inseparable arrows, four competency controls/panels, carousel arrows, accessible ID references, safe-area header structure, About track and Contact/footer order. All line breaks in generated HTML retain real separators. The runtime project records match the published JSON config. Private input documents/fonts remain excluded; only an explicitly configured publishable CV PDF is allowed.
 
 ## Projection and typography evidence
 
@@ -40,7 +42,7 @@ Each command writes **25 SVGs** and a phase manifest to ignored `qa-output/scene
 
 ## Browser verification limit
 
-The managed Sites preview could not start: `sites-previewd mailbox is unavailable at /tmp/sites-previewd/requests`. `sites-preview status` returned the same infrastructure error. The prescribed preview supervisor is unavailable; no alternative server or browser automation was substituted.
+The managed Sites preview could not start: `sites-previewd mailbox is unavailable at /tmp/sites-previewd/requests`. During this local update, one preview start returned that infrastructure error; no retry, alternative server or browser automation was attempted. Browser acceptance of the changed colours, favicon and curves remains blocked.
 
 Desktop/mobile browser layout, actual mouse/touch/keyboard default behaviour, scroll inertia, clipboard copying, Safari safe areas/toolbars, real-device performance, BFCache and perceived animation pace remain **unverified in a browser**. Passing numerical/controller checks and HTTP responses do not replace that acceptance pass.
 

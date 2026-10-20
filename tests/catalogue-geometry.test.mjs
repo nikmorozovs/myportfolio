@@ -17,11 +17,11 @@ test('accelerating departure and enlargement keep the complete aircraft in the v
  const end=sceneAt(PHASE.turn,w,h);close(end.center[1],h*.57);
  }
 });
-test('a real clear title pocket exists above convergence at wide and narrow widths',()=>{
+test('route joins have continuous forward tangents and preserve the wide/narrow title pocket',()=>{
  const cubic=(a,b,c,d,t)=>[0,1].map(k=>(1-t)**3*a[k]+3*(1-t)**2*t*b[k]+3*(1-t)*t*t*c[k]+t**3*d[k]);
  for(const [w,h]of sizes){const s=sceneAt(0,w,h),l=s.intro,left=(w-l.readyWidth)/2,right=left+l.readyWidth,top=l.readyY,bottom=l.readyBottom;
  const paths=[...routeMapSVG(w,h).matchAll(/<path opacity="[^"]+" d="([^"]+)"/g)];assert.equal(paths.length,8);
- for(const [,path]of paths){const commands=path.match(/[MC][^MC]+/g);let point;for(const command of commands){const values=command.slice(1).match(/-?\d+(?:\.\d+)?/g).map(Number);if(command[0]==='M'){point=values;continue;}const [a,b,c]=[values.slice(0,2),values.slice(2,4),values.slice(4,6)];for(let i=0;i<=100;i++){const p=cubic(point,a,b,c,i/100);assert.ok(!(p[0]>=left&&p[0]<=right&&p[1]>=top&&p[1]<=bottom),'Route must not cross the heading pocket');}point=c;}}
+ for(const [,path]of paths){const commands=path.match(/[MC][^MC]+/g);let point,incoming;for(const command of commands){const values=command.slice(1).match(/-?\d+(?:\.\d+)?/g).map(Number);if(command[0]==='M'){point=values;continue;}const [a,b,c]=[values.slice(0,2),values.slice(2,4),values.slice(4,6)];if(incoming){const outgoing=a.map((v,k)=>v-point[k]),cosine=incoming.reduce((sum,v,k)=>sum+v*outgoing[k],0)/(Math.hypot(...incoming)*Math.hypot(...outgoing));assert.ok(cosine>1-1e-6,'Adjacent cubic tangents must continue in the same direction');}incoming=c.map((v,k)=>v-b[k]);for(let i=0;i<=100;i++){const p=cubic(point,a,b,c,i/100);assert.ok(!(p[0]>=left&&p[0]<=right&&p[1]>=top&&p[1]<=bottom),'Route must not cross the heading pocket');}point=c;}}
  }
 });
 test('the entire S4 range is 90 percent, with an unchanged entry zoom and a stable interior Work target',()=>{

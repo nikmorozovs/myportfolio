@@ -6,9 +6,12 @@ import {mountPreviews} from './preview.mjs';
 import {getAircraft,cabinPatternVisible} from './aircraft.mjs';
 import {mountCarousel} from './carousel.mjs';
 import {mountCompetencies} from './competencies.mjs';
-import {textHTML} from './content.mjs';
+import {headingHTML,metricValue} from './content.mjs';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const siteData=$('#site-data'),content=siteData?JSON.parse(siteData.textContent):null;
+// Refresh only the experience value once per page load; preserve its suffix/label.
+const experience=$('[data-metric="experience"] dt');
+if(content?.experience&&experience)experience.firstChild.nodeValue=metricValue(content.experience);
 const root=document.documentElement,reduced=matchMedia('(prefers-reduced-motion: reduce)'),journey=$('.journey'),header=$('.site-header');
 const read=key=>{try{return JSON.parse(sessionStorage.getItem(key));}catch{return null;}};
 const write=(key,value)=>{try{sessionStorage.setItem(key,JSON.stringify(value));}catch{}};
@@ -49,7 +52,7 @@ function paint(){
  $('.case-carousel').style.visibility=state.caseReady?'visible':'hidden';$('.work-hint').style.opacity=state.caseReady?1:0;
  previews.setSectionVisible(state.caseReady);competencies.setVisible(state.state===0);
  const perspective=content.scenes.perspective,caption=$('.scene-caption'),inPerspective=state.state===3;
- $('.eyebrow',caption).textContent=inPerspective?perspective.eyebrow:'';$('h2',caption).innerHTML=inPerspective?textHTML(perspective.title):'';caption.style.opacity=inPerspective?1-smooth(interval(target,PHASE.zoom-.6,PHASE.zoom)):0;
+ $('.eyebrow',caption).textContent=inPerspective?perspective.eyebrow:'';$('h2',caption).innerHTML=inPerspective?headingHTML(perspective.title):'';caption.style.opacity=inPerspective?1-smooth(interval(target,PHASE.zoom-.6,PHASE.zoom)):0;
  const chapter=target>=PHASE.fade?7:target>=PHASE.orbit?6:state.state;
  $('.stage-label').textContent=`0${chapter+1} — ${content.scenes.chapters[chapter]}`;$('.scroll-cue').style.opacity=state.caseReady?0:1;
  journey.dataset.state=`S${state.state}`;journey.style.setProperty('--progress',target/END);journey.classList.toggle('scene-retired',target>=END);
