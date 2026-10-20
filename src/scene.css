@@ -107,6 +107,8 @@ html{scroll-behavior:auto}
 .preview-card .project-title:hover{text-decoration:underline}
 .preview-card .project-title:focus-visible{outline:2px solid var(--dark);outline-offset:5px;border-radius:2px}
 .project-title .title-tail{white-space:nowrap}
+.preview-card .project-title{overflow-wrap:anywhere}
+.project-title .title-word{white-space:normal}
 .preview-card .preview-content{padding-top:max(var(--pad-y),60px);overflow-y:auto;scroll-padding-top:60px}
 .preview-close{width:44px;height:44px;min-width:44px;min-height:44px;padding:12px;border-radius:50%}
 @media(max-height:480px){.preview-close{top:8px;width:44px;height:44px;padding:12px}.preview-card.compact .preview-content h3{font-size:17px}}

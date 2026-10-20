@@ -27,7 +27,7 @@ Actual SVG views were rasterised and inspected at 1440×900 and 390×844: conver
 
 Forced overview/detail renders at the same handoff pose were compared at all ten viewport sizes, both at normal cabin phase and a fractional interrupted-carousel phase of 0.37. All **20 pairs were pixel-identical**, with zero changed channels. Projected camera/engine coordinates are unchanged by carousel phase. Normalization is delayed until cabin curves are outside the crop. A final reverse-view check also keeps shifted cabin windows out of fixed door openings.
 
-Shipped-font advance measurements checked the title pocket, small competency chevrons and the linked title's last-word/arrow group. A compact linked-title size was reduced after finding a small overflow at the lowest landscape preview width. This verifies measured text widths, **not browser line boxes, copied clipboard text or CSS clipping**. Real spaces are asserted in generated text; About's text reads `The person behind the process` when line breaks are removed.
+Shipped-font advance measurements checked the title pocket, small competency chevrons and the linked title's word/arrow groups. A compact linked-title size was reduced after finding a small overflow. Very narrow columns can wrap long words while the final character stays attached to the arrow, preserving the window proportions and readable letter size. This verifies measured text widths, **not browser line boxes, copied clipboard text or CSS clipping**. Real spaces are asserted in generated text; About's text reads `The person behind the process` when line breaks are removed.
 
 Reproduce projection frames with:
 
