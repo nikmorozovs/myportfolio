@@ -1,57 +1,44 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {mountPreviews} from '../src/preview.mjs';
-
-// Controller tests use a minimal DOM contract and a deterministic clock. They
-// deliberately do not claim to exercise CSS layout, hit testing or a browser.
-function fixture({coarse=false}={}){
- const originals=new Map(),setGlobal=(name,value)=>{originals.set(name,Object.getOwnPropertyDescriptor(globalThis,name));Object.defineProperty(globalThis,name,{value,writable:true,configurable:true});};
- let now=0,next=1;const jobs=new Map(),later=(fn,delay=0)=>{const id=next++;jobs.set(id,{fn,at:now+delay});return id;};
- const document={activeElement:null,listeners:new Map(),addEventListener(type,fn){if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(fn);},dispatch(type,event={}){for(const fn of this.listeners.get(type)||[])fn(event);}};
- class Element{
-  constructor(name,rect={left:0,top:0,width:64,height:84}){this.name=name;this.rect=rect;this.parent=null;this.listeners=new Map();this.attrs={};this.hidden=false;this.inert=false;this.children=[];this.queries={};this.dataset={};this.style={setProperty(k,v){this[k]=v;}};const classes=new Set();this.classList={add(...xs){xs.forEach(x=>classes.add(x));},remove(...xs){xs.forEach(x=>classes.delete(x));},contains(x){return classes.has(x);},toggle(x,on){if(on)classes.add(x);else classes.delete(x);return !!on;}};}
-  addEventListener(type,fn){if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(fn);}
-  dispatch(type,event={}){const e={target:this,pointerType:'mouse',preventDefault(){this.defaultPrevented=true;},...event};for(const fn of this.listeners.get(type)||[])fn(e);return e;}
-  querySelector(selector){return this.queries[selector]||null;}
-  contains(node){while(node){if(node===this)return true;node=node.parent;}return false;}
-  setAttribute(k,v){this.attrs[k]=v;}
-  getBoundingClientRect(){const left=parseFloat(this.style.left??this.rect.left),top=parseFloat(this.style.top??this.rect.top),width=parseFloat(this.style.width??this.rect.width),height=parseFloat(this.style.height??this.rect.height);return{left,top,width,height,right:left+width,bottom:top+height};}
-  replaceChildren(){const copy=new Element('copy'),link=new Element('open-case');copy.dataset={full:'Detailed project preview.',compact:'Short preview.'};copy.parent=this;link.parent=this;this.children=[copy,link];this.queries={'[data-full]':copy,'.open-case':link};}
-  focus(){document.activeElement=this;this.dispatch('focus');document.dispatch('focusin',{target:this});}
-  closest(selector){return selector==='.open-case'&&this.name==='open-case'?this:null;}
- }
- const layer=new Element('layer'),card=new Element('card'),content=new Element('content'),button=new Element('button');layer.hidden=true;
- card.parent=layer;content.parent=card;button.parent=card;layer.queries={'.preview-card':card};card.queries={'.preview-content':content,'.preview-close':button,'.open-case':null};
- const query=card.querySelector.bind(card);card.querySelector=selector=>selector==='.open-case'?content.querySelector(selector):query(selector);
- const slots=Array.from({length:4},(_,i)=>{const slot=new Element(`slot-${i}`,{left:30+i*100,top:400,width:60,height:79}),link=new Element(`source-${i}`);link.parent=slot;link.dataset.title=`Case ${i}`;slot.queries={'.case-window':link,template:{content:{cloneNode(){return{};}}}};return slot;});
- setGlobal('document',document);setGlobal('innerHeight',844);document.documentElement={clientWidth:390};setGlobal('matchMedia',q=>({matches:q==='(hover: none)'?coarse:false}));setGlobal('setTimeout',later);setGlobal('clearTimeout',id=>jobs.delete(id));setGlobal('requestAnimationFrame',fn=>later(fn,16));
- let navigations=0;const controller=mountPreviews({slots,layer,canOpen:()=>true,onNavigate:()=>navigations++});
- const advance=ms=>{const end=now+ms;while(true){let id=null,job=null;for(const [k,v]of jobs)if(v.at<=end&&(!job||v.at<job.at)){id=k;job=v;}if(!job)break;jobs.delete(id);now=job.at;job.fn();}now=end;};
- return{controller,slots,layer,card,content,button,document,advance,get navigations(){return navigations;},source:i=>slots[i].querySelector('.case-window'),cleanup(){for(const [name,desc]of originals){if(desc)Object.defineProperty(globalThis,name,desc);else delete globalThis[name];}}};
+import test from 'node:test';import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {mountPreviews} from '../src/preview.mjs';import {domContract} from './dom-contract.mjs';
+const data=JSON.parse(readFileSync(new URL('../src/content.json',import.meta.url),'utf8'));
+function fixture(options={}){
+ const f=domContract(options),el=f.element,root=el('section','work-zone'),layer=el('div','preview-layer'),card=el('article','preview-card',layer),button=el('button','preview-close',card),content=el('div','preview-content',card),outside=el('button','outside'),arrow=el('button','carousel-arrow',root);arrow.dataset.carouselControl='next';layer.hidden=true;
+ const sources=data.cases.map((p,i)=>{const source=el('button','case-window',root,{left:30+i*80,top:400,width:45,height:60});source.dataset.projectId=p.id;return source;});
+ for(const project of data.cases){const template=el('template','',root);template.dataset.projectId=project.id;template.content={cloneNode(){const fragment=new f.Element('#fragment'),h=new f.Element('h3'),link=new f.Element('a','project-title'),copy=new f.Element('p');link.setAttribute('href',`cases/${project.slug}/`);link.textContent=project.short;h.append(link);copy.dataset={full:project.preview,compact:project.compact};fragment.append(h,copy);return fragment;}};}
+ let navigated=null,locked=false,suppressed=false,available=true;const viewport={width:options.width||390,height:options.height||844,headerHeight:80,safeBottom:0};
+ const controller=mountPreviews({root,layer,projects:data.cases,ui:data.ui,canOpen:()=>available,onNavigate:id=>navigated=id,getViewport:()=>viewport,getOrigin:id=>sources.find(s=>s.dataset.projectId===id),onSelectionChange:open=>locked=open,isActivationSuppressed:()=>suppressed});controller.setSectionVisible(true);
+ return{...f,root,layer,card,button,content,sources,outside,arrow,controller,viewport,get locked(){return locked;},get navigated(){return navigated;},set suppressed(value){suppressed=value;},set available(value){available=value;}};
 }
-function withFixture(fn,options){const f=fixture(options);try{fn(f);}finally{f.cleanup();}}
-
-test('viewport resize keeps an open preview visible and recomputes its final text column',()=>withFixture(f=>{
- f.source(0).focus();f.advance(410);assert.equal(f.layer.hidden,false);assert.ok(f.layer.classList.contains('is-open'));const before=f.card.style['--final-w'];
- f.document.documentElement.clientWidth=320;globalThis.innerHeight=568;f.controller.refresh();assert.equal(f.controller.active,f.slots[0]);assert.equal(f.layer.hidden,false);assert.notEqual(f.card.style['--final-w'],before);
- const finalWidth=f.card.style['--final-w'];f.advance(200);assert.equal(f.card.style['--final-w'],finalWidth);assert.equal(f.content.inert,true);f.advance(210);assert.ok(f.layer.classList.contains('is-open'));assert.equal(f.content.inert,false);
+function use(fn,options){const f=fixture(options);try{fn(f);}finally{f.cleanup();}}
+test('hover, focus and pointer departure never open or close a project',()=>use(f=>{
+ f.sources[0].emit('pointerenter');f.sources[0].focus();f.advance(500);assert.equal(f.controller.selectedId,null);assert.equal(f.layer.hidden,true);
+ f.sources[0].emit('click');f.advance(410);f.sources[0].emit('pointerleave');f.outside.focus();f.advance(1000);assert.equal(f.controller.selectedId,data.cases[0].id);assert.equal(f.layer.hidden,false);
 }));
-test('rapid close and reopen cancels stale collapse and reveal callbacks',()=>withFixture(f=>{
- f.source(0).focus();f.advance(100);f.controller.close();f.advance(25);f.source(1).focus();f.advance(600);
- assert.equal(f.controller.active,f.slots[1]);assert.equal(f.layer.hidden,false);assert.ok(f.layer.classList.contains('is-open'));assert.equal(f.source(0).attrs['aria-expanded'],'false');assert.equal(f.source(1).attrs['aria-expanded'],'true');
- f.controller.close({immediate:true});f.advance(1000);assert.equal(f.layer.hidden,true);assert.equal(f.controller.active,null);
+test('the opening click previews without navigation or same-event outside-close; only its heading navigates',()=>use(f=>{
+ const event=f.sources[2].emit('click');assert.equal(event.defaultPrevented,true);assert.equal(f.navigated,null);assert.equal(f.controller.selectedId,data.cases[2].id);assert.equal(f.locked,true);f.advance(410);
+ const link=f.content.querySelector('.project-title');assert.equal(link.getAttribute('href'),`cases/${data.cases[2].slug}/`);link.emit('click');assert.equal(f.navigated,data.cases[2].id);
 }));
-test('keyboard waits for readable content, Escape closes and focus does not reopen the card',()=>withFixture(f=>{
- f.source(2).focus();const event=f.source(2).dispatch('keydown',{key:'Tab',shiftKey:false});assert.equal(event.defaultPrevented,true);assert.equal(f.document.activeElement,f.source(2));
- f.advance(410);assert.equal(f.document.activeElement,f.content.querySelector('.open-case'));
- f.document.dispatch('keydown',{key:'Escape',preventDefault(){}});assert.equal(f.controller.active,null);assert.equal(f.document.activeElement,f.source(2));f.advance(500);assert.equal(f.layer.hidden,true);
+test('project content follows its stable ID after a position changes, with one selected preview',()=>use(f=>{
+ f.sources[0].dataset.projectId=data.cases[3].id;f.sources[3].dataset.projectId=data.cases[0].id;f.sources[0].emit('click');f.advance(410);
+ assert.equal(f.controller.selectedId,data.cases[3].id);assert.equal(f.content.querySelector('.project-title').textContent,data.cases[3].short);assert.equal(f.content.querySelector('[data-full]').textContent,data.cases[3].preview);
+ f.sources[1].emit('click');f.advance(410);assert.equal(f.controller.selectedId,data.cases[1].id);assert.equal(f.sources[0].getAttribute('aria-expanded'),'false');assert.equal(f.sources[1].getAttribute('aria-expanded'),'true');
 }));
-test('first coarse-pointer activation previews; explicit case link navigates',()=>withFixture(f=>{
- const event=f.source(3).dispatch('click',{pointerType:'touch'});assert.equal(event.defaultPrevented,true);assert.equal(f.navigations,0);f.advance(410);assert.equal(f.controller.active,f.slots[3]);
- const link=f.content.querySelector('.open-case');f.card.dispatch('click',{target:link});assert.equal(f.navigations,1);
-},{coarse:true}));
-test('pointer transfer uses the destination corridor; leaving both surfaces closes after intent delay',()=>withFixture(f=>{
- f.slots[0].dispatch('pointerenter');f.advance(500);assert.equal(f.controller.active,f.slots[0]);
- const r=f.card.getBoundingClientRect();f.document.dispatch('pointermove',{pointerType:'mouse',clientX:r.left+r.width/2,clientY:r.top+r.height/2});f.advance(500);assert.equal(f.controller.active,f.slots[0]);
- f.document.dispatch('pointermove',{pointerType:'mouse',clientX:-100,clientY:-100});f.advance(189);assert.equal(f.controller.active,f.slots[0]);f.advance(2);assert.equal(f.controller.active,null);f.advance(500);assert.equal(f.layer.hidden,true);
+test('leaving S4 hides its layer but preserves selection; reverse entry restores the same card',()=>use(f=>{
+ f.sources[1].emit('click');f.advance(100);f.controller.setSectionVisible(false);assert.equal(f.layer.hidden,true);assert.equal(f.controller.selectedId,data.cases[1].id);f.advance(1000);f.outside.emit('click');assert.equal(f.controller.selectedId,data.cases[1].id);
+ f.controller.setSectionVisible(true);assert.equal(f.layer.hidden,false);assert.ok(f.layer.classList.contains('is-open'));assert.equal(f.content.inert,false);f.button.emit('click');f.advance(500);assert.equal(f.controller.selectedId,null);assert.equal(f.layer.hidden,true);assert.equal(f.locked,false);
 }));
+test('outside activation closes, whereas the carousel arrows never compete with it',()=>use(f=>{
+ f.sources[0].emit('click');f.advance(410);f.arrow.emit('click');assert.equal(f.controller.selectedId,data.cases[0].id);f.outside.emit('click');assert.equal(f.controller.selectedId,null);f.advance(500);assert.equal(f.layer.hidden,true);
+}));
+test('fixed final text width survives opening and viewport resize; stale close callbacks cannot hide a new project',()=>use(f=>{
+ f.sources[0].emit('click');const width=f.card.style['--final-w'];f.advance(160);assert.equal(f.card.style['--final-w'],width);assert.equal(f.content.inert,true);
+ f.viewport.width=320;f.viewport.height=568;f.controller.refresh();assert.notEqual(f.card.style['--final-w'],width);assert.equal(f.content.inert,false);f.controller.close();f.advance(25);f.sources[3].emit('click');f.advance(600);assert.equal(f.controller.selectedId,data.cases[3].id);assert.equal(f.layer.hidden,false);assert.ok(f.layer.classList.contains('is-open'));
+}));
+test('keyboard activation waits for readable linked title; Escape returns focus without reopening',()=>use(f=>{
+ f.sources[2].focus();f.sources[2].emit('click',{detail:0});f.advance(200);assert.equal(f.document.activeElement,f.sources[2]);f.advance(210);assert.equal(f.document.activeElement,f.content.querySelector('.project-title'));
+ f.content.querySelector('.project-title').emit('keydown',{key:'Escape'});assert.equal(f.controller.selectedId,null);assert.equal(f.document.activeElement,f.sources[2]);f.advance(500);assert.equal(f.layer.hidden,true);
+}));
+test('post-drag activation is ignored, while restored selection and reduced motion remain usable',()=>use(f=>{
+ f.suppressed=true;f.sources[0].emit('click');assert.equal(f.controller.selectedId,null);f.suppressed=false;f.controller.restoreSelected(data.cases[2].id);assert.equal(f.controller.selectedId,data.cases[2].id);assert.equal(f.content.inert,false);f.button.emit('click');assert.equal(f.layer.hidden,true);
+},{reduced:true}));

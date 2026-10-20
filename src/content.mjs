@@ -1,74 +1,26 @@
-export const cases = [
-  {
-    slug:'chat-platform', short:'Chat platform', window:'Chat', icon:'chat', number:'01',
-    title:'A chat platform built around regional access.',
-    category:'Solution evaluation · Release planning',
-    summary:'Comparing chat platforms, selecting Chatwoot and planning a self-hosted regional pilot.',
-    preview:'Compared platforms and planned a self-hosted Chatwoot regional pilot.',
-    scope:'Regional pilot', scopeLabel:'Delivery stage',
-    contribution:'Comparison, requirements, stakeholder alignment and release planning.',
-    sections:[
-      ['Context & constraints','Regional availability was a key constraint in the choice of a chat platform. The work considered alternative solutions and the option of self-hosting.'],
-      ['My role','My contribution covered comparing options, defining requirements, aligning the choice with stakeholders and preparing the release plan.'],
-      ['Analysis & decisions','The comparison led to the selection of Chatwoot. Self-hosting was chosen to address regional availability.'],
-      ['Implementation','The agreed direction was translated into a release plan and a regional pilot. The confirmed delivery stage is a regional pilot.'],
-      ['Confirmed outcome','Chatwoot was selected and taken into a self-hosted regional pilot.']
-    ],
-    flow:['Regional constraints','Compare options','Align on Chatwoot','Regional pilot']
-  },
-  {
-    slug:'quality-assessment', short:'Quality assessment', window:'Quality', icon:'quality', number:'02',
-    title:'A common framework for assessing quality.',
-    category:'Process design · Google Sheets',
-    summary:'A Google Sheets assessment system with weighted criteria, shared rules and privacy for bonus information.',
-    preview:'Weighted assessment criteria for two departments and more than 30 people.',
-    scope:'2 departments', scopeLabel:'More than 30 people in scope',
-    contribution:'Weighted criteria and rules, result comparison, privacy and synchronisation.',
-    sections:[
-      ['Context & constraints','The quality assessment system covers two departments and more than 30 people in total. Bonus-related information needed to remain private.'],
-      ['My role','My work brought together assessment criteria, their weights and the rules used to interpret results. Comparison and synchronisation were part of the system.'],
-      ['Analysis & decisions','The system uses weighted criteria rather than an unqualified total. Rules support comparison of results, while access to bonus information remains separate.'],
-      ['Implementation','Google Sheets was used for the assessment system, including result comparison, synchronisation and privacy for bonus information.'],
-      ['Confirmed outcome','The assessment system spans two departments and more than 30 people.']
-    ],
-    flow:['Weighted criteria','Assessment rules','Private bonus data','Compare & sync']
-  },
-  {
-    slug:'data-exchange', short:'Data exchange', window:'Data', icon:'data', number:'03',
-    title:'Finding the sequence behind a data defect.',
-    category:'Process analysis · Defect investigation',
-    summary:'Comparing successful and failed records to identify a process-sequence error and give developers a clear finding.',
-    preview:'Record comparison uncovered a sequence error for developers to resolve.',
-    scope:'Process sequence', scopeLabel:'Root cause identified',
-    contribution:'Record comparison, process analysis and findings for developers.',
-    sections:[
-      ['Context & constraints','Some records passed through the data exchange process successfully while others failed. The defect also created a need for manual corrections.'],
-      ['My role','I compared successful and unsuccessful records and investigated the sequence of the process. I then provided the findings to developers.'],
-      ['Analysis & decisions','The comparison revealed an error in the order of process operations. This connected the failed records to a specific process-sequence issue.'],
-      ['Implementation','Developers changed the process using the analytical findings. The analysis and the implementation are distinct contributions.'],
-      ['Confirmed outcome','The developers’ process change eliminated the defect and its associated manual corrections.']
-    ],
-    flow:['Compare records','Trace the sequence','Share the finding','Developers fix process']
-  },
-  {
-    slug:'internal-tool', short:'Internal tool', window:'Tool', icon:'tool', number:'04',
-    title:'Payment presets, easier to find and keep current.',
-    category:'Internal systems · Operational tooling',
-    summary:'An internal tool combining search, favourite payment presets and automated updates.',
-    preview:'Search, favourite payment presets and automated updates. Access for 80+ staff.',
-    scope:'80+ colleagues', scopeLabel:'Customer-facing employees with access',
-    contribution:'Search, favourites and automation of preset updates.',
-    sections:[
-      ['Context & constraints','The internal tool makes payment presets available to customer-facing teams. Access extends to more than 80 customer-facing employees.'],
-      ['My role','Work on the tool brought together searching for presets, keeping favourites and automating updates.'],
-      ['Analysis & decisions','Search and favourites provide two ways to retrieve presets. Automated updates support keeping the information current.'],
-      ['Implementation','The resulting internal tool includes preset search, favourites and automated updates. Teams and management use it in their daily work.'],
-      ['Confirmed outcome','The tool is used daily by teams and management, with access available to 80+ customer-facing employees.']
-    ],
-    flow:['Payment presets','Search & favourites','Automated updates','Daily team use']
-  }
-];
-
+/** Editorial content lives in content.json. This module only formats safe text. */
+export const escapeHTML=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+export const plainText=value=>typeof value==='string'?value:value.lines.join(' ');
+export function textHTML(value){
+ if(typeof value==='string')return escapeHTML(value);
+ const br=value.break==='desktop'?'<br class="desktop-break">':'<br>';
+ // A real separator remains when a responsive line break is hidden or copied.
+ return value.lines.map(escapeHTML).join(` ${br}`);
+}
+export const formatText=(value,tokens)=>value.replace(/\{([a-z]+)\}/g,(all,key)=>tokens[key]??all);
+export function safeURL(value){if(!/^(https:\/\/|mailto:|#)/.test(value))throw new Error('Unsupported content URL');return escapeHTML(value);}
+export function validateContent(data){
+ if(data.schemaVersion!==1)throw new Error('Unsupported content schema');
+ for(const [key,count]of [['cases',4],['competencies',4]]){
+  if(!Array.isArray(data[key])||data[key].length!==count)throw new Error(`Expected ${count} ${key}`);
+  const ids=new Set();for(const item of data[key]){if(!/^[a-z][a-z0-9-]*$/.test(item.id)||ids.has(item.id))throw new Error(`Invalid/duplicate ${key} ID`);ids.add(item.id);}
+ }
+ for(const c of data.cases){if(c.slug!==c.id)throw new Error('Project ID must retain its published route slug');if(!['chat','quality','data','tool'].includes(c.icon))throw new Error('Unknown project icon');}
+ const visit=value=>{if(!value||typeof value!=='object')return;if('lines'in value&&(!Array.isArray(value.lines)||!value.lines.length||value.lines.some(x=>typeof x!=='string')||value.break&&!['always','desktop'].includes(value.break)))throw new Error('Invalid text lines');for(const v of Object.values(value))visit(v);};visit(data);
+ for(const link of data.contact.links)safeURL(link.href);safeURL(data.footer.sourceURL);
+ if(!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(data.contact.email))throw new Error('Invalid contact address');
+ return data;
+}
 export function icon(name) {
   const paths={
     chat:'<path d="M8 8h32a5 5 0 0 1 5 5v20a5 5 0 0 1-5 5H23L12 46v-8H8a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Z"/><path d="M13 19h22M13 27h15"/>',

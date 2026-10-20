@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {sceneAt,previewRect,routeMapSVG,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
 import {AIRCRAFT,CASE_WINDOWS,PASSENGER_WINDOWS,getAircraft,pointVisible} from '../src/aircraft.mjs';
-import {inPreviewBridge} from '../src/preview.mjs';
 const sizes=[[320,568],[360,640],[390,844],[568,320],[640,900],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]];
 const close=(a,b,eps=1e-4)=>assert.ok(Math.abs(a-b)<eps,`${a} differs from ${b}`);
 test('fixed aircraft has paired engines, airfoil surfaces and many decorative windows, exactly four case entrances',()=>{
@@ -35,11 +34,6 @@ test('the route is static in world space and intro/route travel is native scroll
   for(const u of [0,.3,1.2,2.2]){const s=sceneAt(u,w,h);close(s.worldTranslate[1],-u*s.unit);assert.equal(routeMapSVG(w,h),route);assert.equal(s.planeAlpha,1);}
  }
 });
-test('aircraft enters from offscreen at full opacity, grows along runway direction and settles in the centre',()=>{
- for(const [w,h]of sizes){const a=sceneAt(PHASE.takeoff,w,h),b=sceneAt(PHASE.turn,w,h);assert.ok(a.center[1]<0);assert.ok(b.center[1]>h*.5&&b.center[1]<h*.65);assert.ok(b.scale>a.scale*20);
-  let previous=a;for(let i=1;i<=40;i++){const s=sceneAt(PHASE.takeoff+i/40*(PHASE.turn-PHASE.takeoff),w,h);assert.equal(s.planeAlpha,1);assert.ok(s.center[1]>=previous.center[1]);assert.ok(s.scale>=previous.scale);close(s.center[0],w*.5);previous=s;}
- }
-});
 test('top nose points down, side nose points left, orbit is 90 degrees with camera descent',()=>{
  for(const [w,h]of sizes){const top=sceneAt(PHASE.turn,w,h),a=top.project([-450,0,0]),b=top.project([450,0,0]);close(a[0],b[0]);assert.ok(a[1]>b[1]);
  const side=sceneAt(PHASE.zoom,w,h),c=side.project([-450,0,0]),d=side.project([450,0,0]);assert.ok(c[0]<d[0]);close(c[1],d[1]);
@@ -66,12 +60,6 @@ test('previews are centred, safe in portrait/landscape and use one final width f
  for(const [w,h]of sizes){const windows=sceneAt(WORK,w,h).windows,layout=previewRect(windows[0],w,h);for(const win of windows)assert.deepEqual(previewRect(win,w,h),layout);
  const p=layout;close(p.width/p.height,.76);close(p.x+p.width/2,w/2);assert.ok(p.x>=19.999);assert.ok(p.x+p.width<=w-19.999);assert.ok(p.y>=(h<480?64:90));assert.ok(p.y+p.height<=h-(h<480?17.999:23.999));
  const cornerDistance=Math.hypot(Math.max(0,p.radius-p.paddingX),Math.max(0,p.radius-p.paddingY));assert.ok(cornerDistance<=p.radius);assert.ok(p.paddingX>=26);assert.ok(p.width>250||h<480);
- }
-});
-test('pointer can travel from any original window to the displaced card without leaving its bridge',()=>{
- for(const [w,h]of sizes)for(const win of sceneAt(WORK,w,h).windows){const p=previewRect(win,w,h),a={left:win.x-win.width/2,right:win.x+win.width/2,top:win.y-win.height/2,bottom:win.y+win.height/2,width:win.width,height:win.height},b={left:p.x,right:p.x+p.width,top:p.y,bottom:p.y+p.height,width:p.width,height:p.height};
- for(let i=0;i<=100;i++){const t=i/100;assert.ok(inPreviewBridge({x:win.x*(1-t)+(p.x+p.width/2)*t,y:win.y*(1-t)+(p.y+p.height/2)*t},a,b));}
- assert.equal(inPreviewBridge({x:-1000,y:-1000},a,b),false);
  }
 });
 test('reference depth test hides the far cabin and exposes the near cabin',()=>{

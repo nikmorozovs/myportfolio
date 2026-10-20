@@ -62,3 +62,57 @@ html{scroll-behavior:auto}
 .case-toc{top:calc(var(--header-height) + 20px)}
 @media(max-width:639px){.case-page{padding-top:max(105px,calc(var(--header-height) + 25px))}}
 @media print{.contact{min-height:0!important}}
+
+/* 20 October: world-bound takeoff heading, independent S0 explanations. */
+.ready-heading{display:none}
+.motion-ready .ready-heading{display:block;position:absolute;left:50%;transform:translateX(-50%);text-align:center;font-size:clamp(20px,3.2vw,46px);line-height:1.18;color:var(--dark);pointer-events:none;z-index:2}
+.motion-ready .skills{pointer-events:auto}
+.skills>li{position:relative;isolation:isolate}
+.competency-toggle{font:inherit;line-height:inherit;text-align:inherit;color:inherit;background:none;border:0;padding:0 0 8px;max-width:100%;cursor:pointer}
+.competency-chevron{display:inline-block;width:10px;height:10px;margin-left:1px;vertical-align:middle;fill:none;stroke:var(--copper);stroke-width:1.5;transition:transform .18s ease}
+.competency-toggle[aria-expanded=true] .competency-chevron{transform:rotate(180deg)}
+.competency-panel{position:absolute;top:calc(100% + 8px);z-index:8;text-align:left;background:var(--bg);border:1.5px solid var(--copper);border-radius:12px;padding:16px;font-size:13px;line-height:1.65;box-shadow:0 8px 30px #49321d0d;overflow:auto;pointer-events:auto}
+.competency-panel[hidden]{display:none!important}
+.competency-panel.compact{padding:8px 12px}
+.competency-panel p+p{margin-top:12px}
+
+/* The periodic cabin layer never transforms the aircraft or scene. */
+.screen-reader-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
+.case-carousel{position:relative;width:100%;min-height:150px}
+.motion-ready .case-carousel{position:absolute;inset:0;min-height:0;height:100%;pointer-events:none}
+.case-carousel .carousel-viewport{position:absolute;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;pointer-events:auto}
+.case-carousel .case-windows{position:absolute;inset:0;display:block;padding:0;pointer-events:none}
+.case-carousel .case-item{position:absolute;pointer-events:none;margin:0;flex:none}
+.case-carousel .case-face{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;width:100%;height:100%;padding:4px 2px;border:1.5px solid var(--copper);border-radius:38% / 28.88%;background:var(--bg);color:var(--dark);font:inherit;text-align:center;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.case-carousel .case-window{pointer-events:auto;cursor:pointer;min-width:0;min-height:0}
+.case-carousel .case-face .case-icon{display:block;width:clamp(18px,2.8vw,42px);height:clamp(20px,3vw,46px)}
+.case-carousel .case-face .case-icon svg{display:block;width:100%;height:100%}
+.case-carousel .case-face .window-name{font-size:clamp(9px,1vw,13px);line-height:1.3}
+.case-carousel .case-face .window-arrow{font-size:clamp(10px,1vw,17px);line-height:1}
+.case-carousel .case-copy{pointer-events:none!important}
+.case-copy .case-face{pointer-events:none!important}
+.case-carousel .mini .case-icon{width:16px;height:18px}.case-carousel .mini .window-arrow{display:none}
+.case-carousel.is-dragging .carousel-viewport,.case-carousel.is-dragging .case-window{cursor:grabbing}
+.case-carousel.is-busy .case-window{pointer-events:none}
+.carousel-controls{position:absolute;inset:0;pointer-events:none}
+.carousel-arrow{position:absolute;top:calc(var(--window-bottom,100px) + 12px);width:44px;height:44px;border:0;padding:11px;background:var(--bg);color:var(--dark);pointer-events:auto;border-radius:50%}
+.carousel-arrow.previous{left:calc(var(--band-left,0px) + 8px)}
+.carousel-arrow.next{left:calc(var(--band-right,100%) - 52px)}
+.carousel-arrow svg{width:100%;height:100%;display:block;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.carousel-arrow:disabled{opacity:.32;cursor:default}
+.case-carousel:not(.has-carousel) .carousel-controls{display:none}
+.case-carousel:not(.has-carousel) .carousel-viewport{position:relative;overflow:visible}
+.case-carousel:not(.has-carousel) .case-windows{position:relative;display:flex;gap:28px;justify-content:center}
+.preview-card .project-title{color:var(--copper);text-decoration:none;text-underline-offset:5px}
+.preview-card .project-title:hover{text-decoration:underline}
+.preview-card .project-title:focus-visible{outline:2px solid var(--dark);outline-offset:5px;border-radius:2px}
+.project-title .title-tail{white-space:nowrap}
+.preview-card .preview-content{padding-top:max(var(--pad-y),60px);overflow-y:auto;scroll-padding-top:60px}
+.preview-close{width:44px;height:44px;min-width:44px;min-height:44px;padding:12px;border-radius:50%}
+@media(max-height:480px){.preview-close{top:8px;width:44px;height:44px;padding:12px}.preview-card.compact .preview-content h3{font-size:17px}}
+@media(max-width:359px){.case-carousel .case-face{padding:3px 1.5px;gap:2px}.case-carousel .mini .case-icon{height:14px;width:14px}.case-carousel .case-face .window-name{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.competency-chevron{transition:none}.ready-heading{display:none}}
+@media print{.competency-toggle{display:contents}.competency-chevron,.competency-panel,.carousel-controls,.case-copy{display:none!important}.case-carousel,.case-carousel .carousel-viewport,.case-carousel .case-windows{position:static!important;height:auto!important;overflow:visible!important}.case-carousel .case-windows{display:flex!important}.case-carousel .case-item{position:static!important;min-width:120px}}
+.scene-error .case-carousel{display:none!important}
+.scene-error .accessible-catalogue{display:grid;gap:18px;margin-top:40px}
+.scene-error .accessible-catalogue a{display:block;border-bottom:1.5px solid var(--rule);padding-bottom:12px}

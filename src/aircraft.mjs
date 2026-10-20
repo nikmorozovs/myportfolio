@@ -265,7 +265,15 @@ export function aircraftOcclusion(s){
  const tx=dot(s.axes[0],s.target),ty=dot(s.axes[1],s.target),screen=ps=>ps.map(p=>[s.center[0]+(p[0]-tx)*s.scale,s.center[1]-(p[1]-ty)*s.scale]);
  return quickGeometry(getAircraft(s.model),s.axes).flatMap(c=>(c.engine?[c.mask,c.pylonMask]:c.maskLoops||[c.mask]).map(p=>({part:c.name,points:screen(p)})));
 }
-export function aircraftSVG(s,{hideCaseWindows=false}={}){
+export function cabinPatternVisible(s){
+ const r=s.clip;
+ return getAircraft(s.model).curves.filter(c=>c.name==='passenger-window').some(c=>{
+  if(c.normal&&dot(c.normal,s.axes[2])<=0)return false;
+  const ps=c.points.map(s.project),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]);
+  return Math.max(...xs)>=r.x-12&&Math.min(...xs)<=r.x+r.width+12&&Math.max(...ys)>=r.y-12&&Math.min(...ys)<=r.y+r.height+12;
+ });
+}
+export function aircraftSVG(s,{hideCaseWindows=false,hideCabinWindows=false,windowPhase=0}={}){
  const model=getAircraft(s.model),P=s.project,axes=s.axes,tx=dot(axes[0],s.target),ty=dot(axes[1],s.target),rect=s.clip;
  const screenHull=ps=>ps.map(p=>[s.center[0]+(p[0]-tx)*s.scale,s.center[1]-(p[1]-ty)*s.scale]);
  const path2=ps=>`M${ps.map(p=>p.map(num).join(',')).join('L')}Z`;
@@ -293,7 +301,13 @@ export function aircraftSVG(s,{hideCaseWindows=false}={}){
    draw.push('</g>');
   }else if(c.bodyCurves){
    draw.push(mask(c.mask),`<path class="scene-line" d="${path2(screenHull(c.mask))}"/><g class="scene-line">`);
-   for(const curve of c.bodyCurves){if(hideCaseWindows&&curve.caseIndex>=0)continue;draw.push(line(curve.segments));}draw.push('</g>');
+   for(const curve of c.bodyCurves){
+    if(hideCaseWindows&&curve.caseIndex>=0||hideCabinWindows&&curve.name==='passenger-window')continue;
+    // A fractional interrupted carousel phase survives the handoff only in
+    // the cabin pattern. Camera, airframe, wings and engines never move.
+    const segments=windowPhase&&curve.name==='passenger-window'?curve.segments.map(ss=>ss.map(p=>bodyPoint(p[0]-windowPhase*AIRCRAFT.windowPitch,p[1],Math.sign(p[2])||1))):curve.segments;
+    draw.push(line(segments));
+   }draw.push('</g>');
   }else draw.push(loopMask(c.maskLoops),`<g class="scene-line">${line(c.segments)}</g>`);
  }
  return `<g class="aircraft-motion"><defs><clipPath id="aircraft-crop"><rect x="${num(rect.x)}" y="${num(rect.y)}" width="${num(rect.width)}" height="${num(rect.height)}"/></clipPath>${farMask}</defs><g clip-path="url(#aircraft-crop)"><g class="particle-occlusion">${blockers.join('')}</g><g class="aircraft-drawing" opacity="${num(s.fade)}">${draw.join('')}</g></g></g>`;

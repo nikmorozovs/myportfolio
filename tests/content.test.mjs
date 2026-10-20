@@ -1,0 +1,16 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile,mkdir,rm,writeFile} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';
+import {validateContent,textHTML,plainText,safeURL} from '../src/content.mjs';import {buildSite} from '../scripts/build.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url)),data=JSON.parse(await readFile(path.join(root,'src/content.json'),'utf8'));
+test('the sole UTF-8 content file retains four stable project routes and four stable competencies',()=>{
+ assert.equal(validateContent(data),data);assert.deepEqual(data.cases.map(p=>p.id),['chat-platform','quality-assessment','data-exchange','internal-tool']);assert.deepEqual(data.competencies.map(p=>p.id),['requirements','process','evaluation','stakeholders']);for(const p of data.cases){assert.ok(p.preview&&p.compact&&p.sections.every(s=>s.title&&s.paragraphs.length));assert.ok(p.flow.length);}
+ const duplicate=structuredClone(data);duplicate.cases[1].id=duplicate.cases[0].id;assert.throws(()=>validateContent(duplicate));assert.throws(()=>safeURL('javascript:alert(1)'));
+});
+test('responsive line breaks contain real ordinary word separators and strings cannot become HTML',()=>{
+ for(const value of [data.identity.name,data.about.title,data.contact.title,data.hero.intro,...data.competencies.map(c=>c.title)]){const html=textHTML(value);assert.ok(!/\S<br/.test(html));assert.equal(html.replace(/<[^>]*>/g,''),plainText(value));assert.ok(!html.includes('&nbsp;'));}
+ assert.equal(plainText(data.about.title),'The person behind the process');assert.equal(textHTML('<script>alert(1)</script>'),'&lt;script&gt;alert(1)&lt;/script&gt;');
+});
+test('editing a heading, paragraph, indicator and case in JSON changes the build without component edits',async()=>{
+ const base=path.join(root,'qa-output/content-regression'),out=path.join(base,'dist'),file=path.join(base,'edited.json');await mkdir(base,{recursive:true});const edited=structuredClone(data);edited.work.title='Edited work heading';edited.about.paragraphs[0]='Edited paragraph with <b>literal markup</b>.';edited.hero.facts[0].value='123';edited.cases[0].short='Edited project name';edited.cases[0].sections[0].paragraphs[0]='Edited full case paragraph';edited.scenes.perspective.title='Edited perspective caption';edited.ui.closePreview='Edited accessible close label';await writeFile(file,JSON.stringify(edited));
+ try{await buildSite({contentFile:file,outputDirectory:out});const html=await readFile(path.join(out,'index.html'),'utf8'),page=await readFile(path.join(out,'cases/chat-platform/index.html'),'utf8');assert.ok(html.includes('Edited work heading'));assert.ok(html.includes('Edited paragraph with &lt;b&gt;literal markup&lt;/b&gt;.'));assert.ok(html.includes('<dt>123<span> years</span>'));assert.ok(html.includes('Edited project name'));assert.ok(html.includes('Edited accessible close label'));assert.ok(page.includes('Edited full case paragraph'));const runtime=JSON.parse(html.match(/<script type="application\/json" id="site-data">([\s\S]*?)<\/script>/)[1]);assert.equal(runtime.scenes.perspective.title,'Edited perspective caption');assert.equal(runtime.cases[0].id,'chat-platform');assert.equal(runtime.cases[0].short,'Edited project name');
+ }finally{await rm(base,{recursive:true,force:true});}
+});
