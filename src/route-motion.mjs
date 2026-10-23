@@ -1,8 +1,8 @@
 /** Independent, slow deformation of the existing four-cubic tangled routes. */
 export const ROUTE_MOTION = Object.freeze({
- periods: [13.7, 17.9, 22.8, 19.6], // seconds; deliberately different for every knot and line
- desktopAmplitude: [4, 11, 13], // first handle, upper knot, lower knot (CSS px)
- mobileAmplitude: [1.8, 4.5, 5.8],
+ periods: [9.1333, 11.9333, 15.2, 13.0667], // seconds; original periods / 1.5 (50% faster)
+ desktopAmplitude: [7, 19.25, 22.75], // original radii * 1.75; first/upper/lower handle, CSS px
+ mobileAmplitude: [3.15, 7.875, 10.15], // original radii * 1.75
  readyPadding: [9, 18], // mobile, desktop; in addition to actual heading bounds
  labelPadding: [6, 11],
  edgePadding: [6, 12],

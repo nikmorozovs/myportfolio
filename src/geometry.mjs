@@ -99,25 +99,42 @@ export function runwayLayout(width,height,unit=scrollUnit(width,height)){
 }
 export function routeMapSVG(width,height,unit=scrollUnit(width,height)){
  const {lineStart}=introLayout(width,height,unit),w=width,Y=k=>k*unit,X=k=>k*w,paths=[];
+ const r=runwayLayout(width,height,unit);
+ // Four original strands; each keeps its existing 5px parallel trace.
  const shape=[
-  [[.17,lineStart],[.17,Y(.98)],[.80,Y(.91)],[.77,Y(1.28)],[.74,Y(1.56)],[.12,Y(1.32)],[.22,Y(1.72)],[.28,Y(1.98)],[.50,Y(2.03)],[.50,Y(2.20)]],
-  [[.39,lineStart],[.39,Y(1.10)],[.12,Y(1.14)],[.30,Y(1.38)],[.54,Y(1.60)],[.82,Y(1.28)],[.71,Y(1.72)],[.65,Y(1.98)],[.50,Y(2.04)],[.50,Y(2.20)]],
-  [[.61,lineStart],[.61,Y(1.03)],[.86,Y(1.07)],[.66,Y(1.34)],[.46,Y(1.63)],[.13,Y(1.30)],[.29,Y(1.77)],[.36,Y(2.01)],[.50,Y(2.07)],[.50,Y(2.20)]],
-  [[.83,lineStart],[.83,Y(1.14)],[.23,Y(.97)],[.17,Y(1.39)],[.12,Y(1.67)],[.86,Y(1.53)],[.67,Y(1.84)],[.61,Y(2.04)],[.50,Y(2.09)],[.50,Y(2.20)]]
+  [[.17,lineStart],[.17,Y(.98)],[.80,Y(.91)],[.77,Y(1.28)],[.74,Y(1.56)],[.12,Y(1.32)],[.22,Y(1.72)]],
+  [[.39,lineStart],[.39,Y(1.10)],[.12,Y(1.14)],[.30,Y(1.38)],[.54,Y(1.60)],[.82,Y(1.28)],[.71,Y(1.72)]],
+  [[.61,lineStart],[.61,Y(1.03)],[.86,Y(1.07)],[.66,Y(1.34)],[.46,Y(1.63)],[.13,Y(1.30)],[.29,Y(1.77)]],
+  [[.83,lineStart],[.83,Y(1.14)],[.23,Y(.97)],[.17,Y(1.39)],[.12,Y(1.67)],[.86,Y(1.53)],[.67,Y(1.84)]]
  ];
+ // In short landscape viewports, wait until below the wrapped heading before
+ // curving in. Distinct approach lanes eliminate the intermediate 4->2 merge.
+ const compact=height<480;
+ const guideX=compact?[.205,.795,.20,.80]:[.205,.795,.25,.75];
+ const throatX=compact?[.29,.71,.33,.67]:[.29,.71,.37,.63];
  shape.forEach((ps,i)=>{for(const offset of [0,5]){
-  const p=ps.map(([x,y],j)=>[X(x)+(j===ps.length-1?0:offset*(i%2?1:-1)),y]);
-  const left=i%2===0,edge=X(left?.255:.745)+(left?-offset:offset),outer=X(left?.18:.82),turnY=Y(1.72+i*.025);
-  // Keep a deliberate empty pocket around the real heading, not a text mask.
-  p[6]=[outer,turnY];
-  // Collinear forward-facing handles remove corners without moving the knots.
+  const left=i%2===0,shift=left?-offset:offset;
+  const p=ps.map(([x,y])=>[X(x)+shift,y]);
+  p[6]=[X(left?.18:.82)+shift,Y(1.72+i*.025)];
   p[4]=p[3].map((v,j)=>2*v-p[2][j]);
   const exit=p[6].map((v,j)=>v+(v-p[5][j])*.35);
-  paths.push(`<path opacity="${offset?.5:1}" d="M${p[0].map(num)}C${p[1].map(num)} ${p[2].map(num)} ${p[3].map(num)}C${p[4].map(num)} ${p[5].map(num)} ${p[6].map(num)}C${exit.map(num)} ${num(edge)},${num(Y(1.98))} ${num(edge)},${num(Y(2.04))}C${num(edge)},${num(Y(2.14))} ${num(X(.5))},${num(Y(2.10))} ${num(X(.5))},${num(Y(2.20))}"/>`);
+  const guide=[X(guideX[i])+shift,Y(compact?2.03:2.015)];
+  const throat=[X(throatX[i])+shift,Y(compact?2.095:2.075)];
+  // Reflect the handle at the penultimate knot: position and tangent are C1.
+  const follow=throat.map((v,j)=>2*v-guide[j]);
+  // Only the final point is shared. Its incoming tangent matches the
+  // vertical, fully opaque route into the copper runway ribbon.
+  const finalHandle=[r.cx,r.thinStart-Y(.025)],join=[r.cx,r.thinStart];
+  const pt=v=>v.map(num).join(',');
+  const d='M'+pt(p[0])+'C'+pt(p[1])+' '+pt(p[2])+' '+pt(p[3])
+   +'C'+pt(p[4])+' '+pt(p[5])+' '+pt(p[6])
+   +'C'+pt(exit)+' '+pt(guide)+' '+pt(throat)
+   +'C'+pt(follow)+' '+pt(finalHandle)+' '+pt(join);
+  paths.push('<path opacity="1" d="'+d+'"/>');
  }});
- const r=runwayLayout(width,height,unit),half=r.width/2,blend=r.start-r.blendStart,n=num;
+ const half=r.width/2,blend=r.start-r.blendStart,n=num;
  const ribbon=`M${n(r.cx-.75)},${n(r.blendStart)}C${n(r.cx-.75)},${n(r.blendStart+blend*.35)} ${n(r.cx-half)},${n(r.start-blend*.35)} ${n(r.cx-half)},${n(r.start)}V${n(r.end)}H${n(r.cx+half)}V${n(r.start)}C${n(r.cx+half)},${n(r.start-blend*.35)} ${n(r.cx+.75)},${n(r.blendStart+blend*.35)} ${n(r.cx+.75)},${n(r.blendStart)}Z`;
- return `<g class="scene-line">${paths.join('')}<path d="M${n(r.cx)},${n(r.thinStart)}V${n(r.blendStart)}"/></g><path class="runway-fill" d="${ribbon}" fill="#AB7753" stroke="none"/><defs><clipPath id="runway-body-clip"><rect x="${n(r.cx-half)}" y="${n(r.start)}" width="${r.width}" height="${n(r.length)}"/></clipPath></defs><path class="runway-markings" d="M${n(r.cx)},${n(r.start)}V${n(r.end)}" fill="none" stroke="#F6F5F0" stroke-width="1.5" stroke-dasharray="12 20" clip-path="url(#runway-body-clip)"/>`;
+ return `<g class="scene-line" stroke="#AB7753" stroke-opacity="1">${paths.join('')}<path d="M${n(r.cx)},${n(r.thinStart)}V${n(r.blendStart+Math.min(3,blend*.1))}"/></g><path class="runway-fill" d="${ribbon}" fill="#AB7753" stroke="none"/><defs><clipPath id="runway-body-clip"><rect x="${n(r.cx-half)}" y="${n(r.start)}" width="${r.width}" height="${n(r.length)}"/></clipPath></defs><path class="runway-markings" d="M${n(r.cx)},${n(r.start)}V${n(r.end)}" fill="none" stroke="#F6F5F0" stroke-width="1.5" stroke-dasharray="12 20" clip-path="url(#runway-body-clip)"/>`;
 }
 export function routeSVG(s){return `<g transform="translate(0 ${num(-s.travel)})">${routeMapSVG(s.width,s.height,s.unit)}</g>`;}
 export function pointsPath(ps,close=true){return`M${ps.map(p=>p.map(num).join(',')).join('L')}${close?'Z':''}`;}

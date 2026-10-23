@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sceneAt,previewRect,routeMapSVG,introLayout,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
+import {sceneAt,previewRect,routeMapSVG,runwayLayout,introLayout,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
 import {AIRCRAFT,CASE_WINDOWS,PASSENGER_WINDOWS,getAircraft,pointVisible} from '../src/aircraft.mjs';
 import {prepareRoute,routePointsAt,pathFromPoints,ROUTE_MOTION} from '../src/route-motion.mjs';
 const sizes=[[320,568],[360,640],[390,844],[568,320],[640,900],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]];
@@ -108,6 +108,57 @@ test('start-label padding cannot silence the visible upper curves',()=>{
    }
   }
   assert.ok(upperChange>2, 'Visible first cubic must move appreciably');
+ }
+});
+test('all four strands enter the opaque runway at one smooth point while upper curves still move',()=>{
+ const bezier=(p,j,t)=>{const q=1-t,k=j*3,weights=[q*q*q,3*q*q*t,3*q*t*t,t*t*t];
+  return [0,1].map(axis=>weights.reduce((sum,weight,n)=>sum+weight*p[k+n][axis],0));};
+ const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+ for(const [w,h] of [[320,568],[390,844],[568,320],[844,390],[1280,720],[1440,900],[1920,1080]]){
+  const mobile=w<640,unit=h*(mobile?1.08:1),r=runwayLayout(w,h),svg=routeMapSVG(w,h);
+  const paths=[...svg.matchAll(/<path opacity="([^"]+)" d="([^"]+)"\/>/g)];
+  assert.equal(paths.length,8,'four original strands with their paired traces');
+  assert.ok(paths.every(m=>m[1]==='1'),'no translucent path at the junction');
+  assert.ok(svg.includes('<g class="scene-line" stroke="#AB7753" stroke-opacity="1">'));
+  assert.ok(svg.includes('class="runway-fill"')&&svg.includes('fill="#AB7753" stroke="none"'));
+  const centre=svg.match(/<path d="M([-\d.]+),([-\d.]+)V([-\d.]+)"\/>/);
+  assert.ok(centre,'one shared route into the runway ribbon');
+  close(Number(centre[1]),r.cx,.002);close(Number(centre[2]),r.thinStart,.002);
+  assert.ok(Number(centre[3])>r.blendStart+1,'stroke overlaps the ribbon without a seam');
+  const readyPad=ROUTE_MOTION.readyPadding[mobile?0:1],readyHeight=h<480?2*24*1.18:2*1.18*Math.min(46,Math.max(20,w*.032));
+  const ready={left:w*.29-readyPad,right:w*.71+readyPad,top:1.83*unit-readyPad,bottom:1.83*unit+readyHeight+readyPad};
+  const gap=([x,y])=>Math.hypot(Math.max(ready.left-x,0,x-ready.right),Math.max(ready.top-y,0,y-ready.bottom));
+  let moved=0;
+  const baseline=[];
+  for(let i=0;i<paths.length;i++){
+   const d=paths[i][2],p=[...(d.match(/-?(?:\d+\.?\d*|\.\d+)/g)||[])].map(Number);
+   assert.equal(p.length,26);
+   const model=prepareRoute(d,i,w,[ready]);
+   baseline.push(model.points);
+   for(const phase of [0,3,8,15,29]){
+    const points=routePointsAt(model,phase);
+    assert.deepEqual(points[0],model.points[0],'fixed heading anchor');
+    assert.deepEqual(points.slice(8),model.points.slice(8),'static final approach and runway tangent');
+    close(points[12][0],r.cx,.002);close(points[12][1],r.thinStart,.002);
+    close(points[11][0],r.cx,.002);
+    assert.ok(points[11][1]<points[12][1],'vertical incoming tangent at merge');
+    for(const axis of [0,1]){
+     close(points[9][axis]-points[8][axis],points[10][axis]-points[9][axis],.005);
+    }
+    for(let segment=0;segment<4;segment++)for(let step=0;step<=80;step++){
+     const at=bezier(points,segment,step/80),margin=ROUTE_MOTION.edgePadding[mobile?0:1];
+     assert.ok(at[0]>=margin-.01&&at[0]<=w-margin+.01,'curve stays inside sides');
+     assert.ok(gap(at)>1,'actual cubic avoids padded heading at every phase');
+    }
+    if(phase===15)moved+=distance(bezier(model.points,0,.5),bezier(points,0,.5));
+   }
+  }
+  for(const a of [0,2,4,6])for(const b of [0,2,4,6]){
+   if(a>=b)continue;
+   assert.ok(distance(bezier(baseline[a],3,.5),bezier(baseline[b],3,.5))>2,
+    'distinct strands remain separated until their common endpoint');
+  }
+  assert.ok(moved>2,'deformation remains visible away from pinned joints');
  }
 });
 test('top nose points down, side nose points left, orbit is 90 degrees with camera descent',()=>{
