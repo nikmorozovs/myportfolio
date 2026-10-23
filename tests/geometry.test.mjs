@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sceneAt,previewRect,routeMapSVG,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
+import {sceneAt,previewRect,routeMapSVG,introLayout,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
 import {AIRCRAFT,CASE_WINDOWS,PASSENGER_WINDOWS,getAircraft,pointVisible} from '../src/aircraft.mjs';
 import {prepareRoute,routePointsAt,pathFromPoints,ROUTE_MOTION} from '../src/route-motion.mjs';
 const sizes=[[320,568],[360,640],[390,844],[568,320],[640,900],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]];
@@ -70,6 +70,44 @@ test('time-driven tangled routes keep exact anchors, smooth joins and clear text
    }
   }
   assert.ok(totalChange>1,'Open knots move over time');
+ }
+});
+test('start-label padding cannot silence the visible upper curves',()=>{
+ const cubic=(ps,t)=>{
+  const q=1-t,b=[q*q*q,3*q*q*t,3*q*t*t,t*t*t];
+  return [0,1].map(axis=>b.reduce((v,weight,i)=>v+weight*ps[i][axis],0));
+ };
+ for(const [w,h] of [[390,844],[568,320],[1440,900]]){
+  const {labelsY,lineStart,readyY}=introLayout(w,h),mobile=w<640;
+  // Real two-line competency headings can extend into the start's extra
+  // clearance padding; the start itself is not supposed to move.
+  const pad=mobile?6:11,label={
+   left:0,right:w,top:labelsY-pad,bottom:lineStart+4,startLabel:true
+  };
+  const readyPad=ROUTE_MOTION.readyPadding[mobile?0:1],heading={
+   left:w*.29-readyPad,right:w*.71+readyPad,top:readyY-readyPad,
+   bottom:readyY+(mobile?47:109)+readyPad
+  };
+  const paths=[...routeMapSVG(w,h).matchAll(/<path opacity="[^"]+" d="([^"]+)"/g)].map(x=>x[1]);
+  let upperChange=0;
+  for(let i=0;i<paths.length;i++){
+   const model=prepareRoute(paths[i],i,w,[label,heading]);
+   assert.ok(model.radii[0]>.5, 'First moving handle is not frozen by its label');
+   assert.ok(model.radii[1]>1, 'Upper curve is not frozen by its label');
+   const before=cubic(routePointsAt(model,0).slice(0,4),.5);
+   const after=cubic(routePointsAt(model,9).slice(0,4),.5);
+   upperChange+=Math.hypot(after[0]-before[0],after[1]-before[1]);
+   for(const seconds of [0,9,23,43]){
+    const points=routePointsAt(model,seconds);
+    assert.deepEqual(points[0],model.points[0]);
+    assert.deepEqual(points.slice(8),model.points.slice(8));
+    for(let j=0;j<=60;j++){
+     const p=cubic(points.slice(0,4),j/60);
+     assert.ok(p[1]>lineStart-2.1,'First cubic stays below actual label');
+    }
+   }
+  }
+  assert.ok(upperChange>2, 'Visible first cubic must move appreciably');
  }
 });
 test('top nose points down, side nose points left, orbit is 90 degrees with camera descent',()=>{
