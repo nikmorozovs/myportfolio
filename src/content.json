@@ -123,12 +123,12 @@
       },
       {
         "id": "quality-departments",
-        "value": "2",
-        "suffix": "",
+        "value": "30",
+        "suffix": "+",
         "label": {
           "lines": [
-            "Departments covered",
-            "by quality assessment"
+            "Employees covered by structured",
+            "quality assessment"
           ]
         }
       }
@@ -139,48 +139,48 @@
       "id": "requirements",
       "title": {
         "lines": [
-          "Requirements",
-          "analysis"
+          "Business",
+          "goals"
         ]
       },
       "paragraphs": [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae justo at felis eleifend facilisis."
+        "Everyone can agree on what to build and still picture a different version of success. I make those expectations explicit, so we can agree on the outcome and how we’ll know we’ve achieved it."
       ]
     },
     {
       "id": "process",
       "title": {
         "lines": [
-          "Process",
-          "analysis"
+          "User",
+          "needs"
         ]
       },
       "paragraphs": [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae justo at felis eleifend facilisis."
+        "Identical job titles don’t mean identical needs. I discover how your team actually works, including exceptions and judgment calls, before turning those needs into requirements."
       ]
     },
     {
       "id": "evaluation",
       "title": {
         "lines": [
-          "Solution",
-          "evaluation"
+          "Existing",
+          "processes"
         ]
       },
       "paragraphs": [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae justo at felis eleifend facilisis."
+        "If your process only works when the right person is around, some of its rules may still live in their head. I uncover those unwritten decisions and make them explicit, so the team has a process it can actually follow."
       ]
     },
     {
       "id": "stakeholders",
       "title": {
         "lines": [
-          "Stakeholder",
-          "alignment"
+          "Solution",
+          "constraints"
         ]
       },
       "paragraphs": [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae justo at felis eleifend facilisis."
+        "A promising solution can look very different once integration, compliance and ongoing maintenance enter the picture. I weigh those constraints alongside the benefits, including whether a simpler alternative could achieve the same goal."
       ]
     }
   ],
@@ -235,8 +235,8 @@
     "eyebrow": "A PROFESSIONAL PERSPECTIVE",
     "sectionLabel": "02 / RECOMMENDATION",
     "quoteMark": "“",
-    "draftLabel": "Recommendation excerpt · pending selection",
-    "text": "An excerpt from the recommendation will be added here.",
+    "draftLabel": "Recommendation excerpt",
+    "text": "When an operational problem needed investigation or a business process needed improvement, Nikolajs was the person I would turn to.",
     "initials": "VM",
     "name": "Vladimirs Mihailovs",
     "role": {
@@ -270,8 +270,7 @@
     "whatsapp": {
       "label": "WhatsApp",
       "pending": "Link pending",
-      "hint": "A verified WhatsApp link has not been provided",
-      "href": null
+      "href": "https://wa.me/nikmorozovs"
     },
     "cv": {
       "title": "Looking for my CV?",
