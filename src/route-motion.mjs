@@ -52,6 +52,12 @@ export function prepareRoute(d, index, width, rects = [], mobile = width < 640) 
  const points = parseRoute(d), radii = [...(mobile ? ROUTE_MOTION.mobileAmplitude : ROUTE_MOTION.desktopAmplitude)];
  const edge = ROUTE_MOTION.edgePadding[mobile ? 0 : 1];
  for (let segment = 0; segment < 3; segment++) {
+  // Competency labels intentionally meet the fixed starting anchors. Their
+  // padded rectangles may contain the anchor itself, so checking the first
+  // cubic against them would shrink EVERY moving handle to zero. That cubic
+  // leaves the labels downwards; its fixed start and Bernstein weights already
+  // taper displacement to zero at the anchor. Check all other obstacles here.
+  const obstacles = segment === 0 ? rects.filter(rect => !rect.startLabel) : rects;
   let longest = 0;
   for (let j = segment * 3; j < segment * 3 + 3; j++)
    longest = Math.max(longest, Math.hypot(points[j + 1][0] - points[j][0], points[j + 1][1] - points[j][1]));
@@ -61,7 +67,7 @@ export function prepareRoute(d, index, width, rects = [], mobile = width < 640) 
   const steps = Math.max(80, Math.ceil(longest));
   for (let j = 0; j <= steps; j++) {
    const {x, y, weights} = sample(points, segment, j / steps);
-   const room = Math.max(0, clearance(x, y, width, rects, edge) - ROUTE_MOTION.clearanceSlack);
+   const room = Math.max(0, clearance(x, y, width, obstacles, edge) - ROUTE_MOTION.clearanceSlack);
    const excursion = weights.reduce((sum, weight, i) => sum + weight * radii[i], 0);
    if (excursion > room && excursion > 0) {
     const ratio = room / excursion;
@@ -112,6 +118,7 @@ export function mountRouteMotion({route, world}) {
    const pair = element.matches('.ready-heading') ? ROUTE_MOTION.readyPadding : ROUTE_MOTION.labelPadding;
    const pad = pair[mobile ? 0 : 1];
    rects.push({
+    startLabel: element.matches('.competency-toggle'),
     left: (b.left - box.left) * sx - pad, right: (b.right - box.left) * sx + pad,
     top: (b.top - box.top) * sy - pad, bottom: (b.bottom - box.top) * sy + pad
    });
