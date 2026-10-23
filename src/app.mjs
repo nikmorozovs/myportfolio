@@ -2,6 +2,7 @@ import {END,PHASE,clamp,smooth,interval,sceneAt,sceneSVG,routeMapSVG,scrollUnit}
 import {workProgress,aboutTrack,sectionTarget} from './layout.mjs';
 import {ScrollNavigator,bindNavigationInterrupts} from './navigation.mjs';
 import {mountParticles} from './particles.mjs';
+import {mountRouteMotion} from './route-motion.mjs';
 import {mountPreviews} from './preview.mjs';
 import {getAircraft,cabinPatternVisible} from './aircraft.mjs';
 import {mountCarousel} from './carousel.mjs';
@@ -18,7 +19,7 @@ const write=(key,value)=>{try{sessionStorage.setItem(key,JSON.stringify(value));
 $$('[data-return]').forEach(a=>a.addEventListener('click',()=>write('portfolio:return',true)));
 let motion=false,state=null,w=0,h=0,headerHeight=0,safeBottom=0,unit=1,start=0,target=0,basisHeight=0,raf=0,resizeTimer=0,reading=null,modelsQueued=false;
 const svg=$('.scene'),world=$('.intro-world'),route=$('.route-map'),intro=$('.intro'),skills=$('.skills'),work=$('.work-zone'),track=$('.about-track'),about=$('#about');
-let aircraftGroup=null,particles=null,previews=null,carousel=null,competencies=null;
+let aircraftGroup=null,particles=null,previews=null,carousel=null,competencies=null,routeMotion=null;
 const maxScroll=()=>Math.max(0,root.scrollHeight-innerHeight);
 const documentTop=el=>el.getBoundingClientRect().top+scrollY;
 function resolveTarget(id){
@@ -34,6 +35,7 @@ function focusTarget(id){
 const scrollNav=new ScrollNavigator({getPosition:()=>scrollY,setPosition:y=>scrollTo({top:y,behavior:'auto'}),resolveTarget,getHeight:()=>h,reduced:()=>reduced.matches,onPosition:()=>queue(),onFinish:(id,focus)=>{if(focus)requestAnimationFrame(()=>focusTarget(id));}});
 bindNavigationInterrupts(scrollNav,document);
 if(journey){
+ routeMotion=mountRouteMotion({route,world});
  particles=mountParticles($('.flight-particles'),{onOffset:offset=>{if(aircraftGroup)aircraftGroup.setAttribute('transform',`translate(${offset[0].toFixed(3)} ${offset[1].toFixed(3)})`);}});
  const remember=id=>{if(motion)write('portfolio:work',{u:clamp(target,PHASE.hold+.1,PHASE.pan-.1),carousel:carousel.position,projectId:id});};
  carousel=mountCarousel({root:$('.case-carousel'),projects:content.cases,ui:content.ui,canMove:()=>!previews?.isOpen,reduced:()=>reduced.matches});
@@ -73,7 +75,7 @@ function queue(){
  if(!raf)raf=requestAnimationFrame(()=>{raf=0;try{paint();updateStaticSections();updateReadingState();}catch(error){failed(error);}});
 }
 function reset(){
- scrollNav.cancel();motion=false;cancelAnimationFrame(raf);raf=0;previews?.setSectionVisible(false);competencies?.close();particles?.stop();aircraftGroup=null;
+ routeMotion?.stop();scrollNav.cancel();motion=false;cancelAnimationFrame(raf);raf=0;previews?.setSectionVisible(false);competencies?.close();particles?.stop();aircraftGroup=null;
  root.classList.remove('motion-enabled');
  if(!journey)return;
  journey.classList.remove('motion-ready','scene-retired');journey.removeAttribute('style');
@@ -91,7 +93,7 @@ function measure(preserve=false){
  headerHeight=header?.getBoundingClientRect().height||0;safeBottom=parseFloat(getComputedStyle(root).getPropertyValue('--safe-bottom'))||0;
  if(motion){
   start=documentTop(journey);journey.style.setProperty('--stage-height',`${h}px`);journey.style.setProperty('--journey-height',`${h+END*unit}px`);
-  const layout=sceneAt(0,w,h,{unit}).intro;world.style.height=`${layout.worldHeight}px`;route.setAttribute('viewBox',`0 0 ${w} ${layout.worldHeight}`);route.style.height=`${layout.worldHeight}px`;route.innerHTML=routeMapSVG(w,h,unit);skills.style.top=`${layout.labelsY}px`;const ready=$('.ready-heading');ready.style.top=`${layout.readyY}px`;ready.style.width=`${layout.readyWidth}px`;svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  const layout=sceneAt(0,w,h,{unit}).intro;world.style.height=`${layout.worldHeight}px`;route.setAttribute('viewBox',`0 0 ${w} ${layout.worldHeight}`);route.style.height=`${layout.worldHeight}px`;route.innerHTML=routeMapSVG(w,h,unit);skills.style.top=`${layout.labelsY}px`;const ready=$('.ready-heading');ready.style.top=`${layout.readyY}px`;ready.style.width=`${layout.readyWidth}px`;svg.setAttribute('viewBox',`0 0 ${w} ${h}`);routeMotion?.refresh();
  }
  if(track&&about){reading=aboutTrack({viewportHeight:h,headerHeight,contentHeight:about.getBoundingClientRect().height});track.style.setProperty('--about-track-height',`${reading.trackHeight}px`);track.style.setProperty('--about-pin-top',`${reading.stickyTop}px`);}
  if(preserve&&orientation&&motion&&old>0&&old<END&&!wasNavigating)scrollTo({top:start+old*unit,behavior:'auto'});

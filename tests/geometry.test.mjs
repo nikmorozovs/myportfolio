@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {sceneAt,previewRect,routeMapSVG,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
 import {AIRCRAFT,CASE_WINDOWS,PASSENGER_WINDOWS,getAircraft,pointVisible} from '../src/aircraft.mjs';
+import {prepareRoute,routePointsAt,pathFromPoints,ROUTE_MOTION} from '../src/route-motion.mjs';
 const sizes=[[320,568],[360,640],[390,844],[568,320],[640,900],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]];
 const close=(a,b,eps=1e-4)=>assert.ok(Math.abs(a-b)<eps,`${a} differs from ${b}`);
 test('fixed aircraft has paired engines, airfoil surfaces and many decorative windows, exactly four case entrances',()=>{
@@ -32,6 +33,43 @@ test('A/B models have identical visible window curves and engine anchors, with n
 test('the route is static in world space and intro/route travel is native scroll distance',()=>{
  for(const [w,h]of sizes){const route=routeMapSVG(w,h);assert.ok((route.match(/C/g)||[]).length>=24);assert.ok(route.includes('stroke-dasharray'));
   for(const u of [0,.3,1.2,2.2]){const s=sceneAt(u,w,h);close(s.worldTranslate[1],-u*s.unit);assert.equal(routeMapSVG(w,h),route);assert.equal(s.planeAlpha,1);}
+ }
+});
+test('time-driven tangled routes keep exact anchors, smooth joins and clear text at wide and narrow widths',()=>{
+ const onCurve=(ps,segment,t)=>{
+  const q=1-t,k=segment*3,b=[q*q*q,3*q*q*t,3*q*t*t,t*t*t];
+  return [0,1].map(axis=>b.reduce((value,weight,j)=>value+weight*ps[k+j][axis],0));
+ };
+ const gap=(p,r)=>Math.hypot(Math.max(r.left-p[0],0,p[0]-r.right),Math.max(r.top-p[1],0,p[1]-r.bottom));
+ for(const [w,h] of [[320,568],[390,844],[1440,900]]){
+  const mobile=w<640,unit=h*(mobile?1.08:1),pad=ROUTE_MOTION.readyPadding[mobile?0:1];
+  // A conservative two-line phone / single-line desktop heading box.
+  // In the browser the actual, wrapped bounding box is measured instead.
+  const ready={left:w*.29-pad,right:w*.71+pad,top:1.83*unit-pad,bottom:1.83*unit+(mobile?60:68)+pad};
+  const source=routeMapSVG(w,h),paths=[...source.matchAll(/<path opacity="[^"]+" d="([^"]+)"/g)].map(match=>match[1]);
+  assert.equal(paths.length,8);
+  let totalChange=0;
+  for(let i=0;i<paths.length;i++){
+   const model=prepareRoute(paths[i],i,w,[ready]),base=model.points;
+   for(const seconds of [0,5,11,19,27,43]){
+    const p=routePointsAt(model,seconds);
+    assert.deepEqual(p[0],base[0]);assert.deepEqual(p.slice(8),base.slice(8));
+    for(const axis of [0,1]){
+     close(p[3][axis]-p[2][axis],p[4][axis]-p[3][axis],.004);
+     close((p[6][axis]-p[5][axis])*.35,p[7][axis]-p[6][axis],.004);
+     close((p[9][axis]-p[8][axis])*(p[10][1-axis]-p[9][1-axis]),
+      (p[9][1-axis]-p[8][1-axis])*(p[10][axis]-p[9][axis]),.004);
+    }
+    assert.equal(pathFromPoints(p).match(/C/g)?.length,4);
+    for(let segment=0;segment<4;segment++)for(let j=0;j<=40;j++){
+     const point=onCurve(p,segment,j/40),edge=ROUTE_MOTION.edgePadding[mobile?0:1];
+     assert.ok(point[0]>=edge-.01&&point[0]<=w-edge+.01,'Route stays within side margins');
+     assert.ok(gap(point,ready)>1,'Route does not approach heading');
+    }
+    if(seconds===19)totalChange+=Math.hypot(p[3][0]-base[3][0],p[3][1]-base[3][1]);
+   }
+  }
+  assert.ok(totalChange>1,'Open knots move over time');
  }
 });
 test('top nose points down, side nose points left, orbit is 90 degrees with camera descent',()=>{
