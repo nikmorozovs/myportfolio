@@ -11,7 +11,10 @@ test('runway is exactly half the former body size and shares marking/clip longit
 test('thin route and filled runway expansion have vertical matching endpoint tangents',()=>{
  const r=runwayLayout(1440,900),d=r.start-r.blendStart;
  const leftStart=[r.cx-.75,r.blendStart],c1=[r.cx-.75,r.blendStart+d*.35],c2=[r.cx-r.width/2,r.start-d*.35],leftEnd=[r.cx-r.width/2,r.start];
- close(c1[0]-leftStart[0],0);close(leftEnd[0]-c2[0],0);assert.ok(c1[1]>leftStart[1]);assert.ok(leftEnd[1]>c2[1]);assert.ok(routeMapSVG(1440,900).includes(`V${Number(r.blendStart.toFixed(3))}`));
+ close(c1[0]-leftStart[0],0);close(leftEnd[0]-c2[0],0);assert.ok(c1[1]>leftStart[1]);assert.ok(leftEnd[1]>c2[1]);
+ const centre=routeMapSVG(1440,900).match(/<path d="M([-\d.]+),([-\d.]+)V([-\d.]+)"\/>/);
+ assert.ok(centre,'shared centre stroke exists');close(Number(centre[1]),r.cx);close(Number(centre[2]),r.thinStart);
+ assert.ok(Number(centre[3])>r.blendStart&&Number(centre[3])<=r.blendStart+3.01,'route slightly overlaps copper fill to avoid a seam');
 });
 test('far engine masks agree with wing ray occlusion over intermediate angles and retain visible portions',()=>{
  const wing=part('wing--1'),engine=part('nacelle--1'),mesh=getAircraft().meshes.find(m=>m.name==='nacelle--1');let hidden=0,visible=0;
