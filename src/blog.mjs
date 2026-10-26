@@ -1,3 +1,4 @@
+import {trapDialogFocus} from './dialog-focus.mjs';
 import {defaultState,tagCounts,readQuery,writeQuery,selectPosts,parseDate,displayDate,rememberAndRecommend,normalizeState} from './blog-state.mjs';
 import {archiveResults,filterSummary,postCard} from './blog-render.mjs';
 const dataNode=document.querySelector('#blog-data');
@@ -6,6 +7,7 @@ if(dataNode){
  if(current){let storage;try{storage=localStorage;}catch{}const post=rememberAndRecommend(posts,current,storage);if(post)document.querySelector('.unread-recommendation').innerHTML='<h2>Recommended article</h2>'+postCard(post);}
  if(archive){
   const tags=tagCounts(posts).map(([t])=>t),results=archive.querySelector('.archive-results'),summary=archive.querySelector('.filter-summary'),dialog=archive.querySelector('dialog'),form=dialog.querySelector('form'),trigger=archive.querySelector('[data-advanced]');let state=readQuery(location.search,tags),oldOverflow='';
+  trapDialogFocus(dialog);
   function render(scroll=false){const selected=selectPosts(posts,state,config);state.page=selected.page;results.innerHTML=archiveResults(selected);summary.innerHTML=filterSummary(state);archive.querySelector('[data-all]').setAttribute('aria-pressed',String(!state.tags.length&&!state.from&&!state.to));archive.querySelectorAll('[data-tag]').forEach(b=>b.setAttribute('aria-pressed',String(state.tags.includes(b.dataset.tag))));const q=writeQuery(state),url=location.pathname+(q?'?'+q:'');if(location.pathname+location.search!==url)history.replaceState(null,'',url);if(scroll){const h=document.querySelector('#archive-title');h.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});h.focus({preventScroll:true});}}
   function commit(next,scroll=false){state=normalizeState(next,tags);const selected=selectPosts(posts,state,config);state.page=selected.page;const q=writeQuery(state);history.pushState(null,'',location.pathname+(q?'?'+q:''));render(scroll);}
   function resetDraft(s){for(const input of form.querySelectorAll('[name="tag"]'))input.checked=s.tags.includes(input.value);for(const k of ['from','to']){form.elements[k].value=displayDate(s[k]);document.querySelector('#'+k+'-calendar').value=s[k];document.querySelector('#'+k+'-error').textContent='';form.elements[k].removeAttribute('aria-invalid');}form.querySelector(`[name="sort"][value="${s.sort}"]`).checked=true;countTags();}

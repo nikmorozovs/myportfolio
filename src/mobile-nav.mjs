@@ -1,5 +1,7 @@
+import {trapDialogFocus} from './dialog-focus.mjs';
 const menu=document.querySelector('#mobile-menu'),toggle=document.querySelector('.menu-toggle');
 if(menu&&toggle){
+ trapDialogFocus(menu);
  let overflow='',closing=false,timer;
  const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  function close(){if(!menu.open||closing)return;closing=true;menu.classList.add('is-closing');timer=setTimeout(()=>menu.close(),reduced()?0:200);}
