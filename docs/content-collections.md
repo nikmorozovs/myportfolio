@@ -37,3 +37,9 @@ Seven original English LinkedIn posts are included from the supplied `linkedin_p
 ## Verification
 
 Run `npm test`, `npm run build`, and `npm run check`. Tests retain the original animation/gesture regressions, compare migrated cases to the original snapshot, and build isolated fixtures for JSON-only growth, seven posts and pagination boundaries. `scripts/browser-check.mjs` adds real Chromium checks for filters, history, validation, keyboard focus, responsive layouts, reading history, 0–10 cases, previews and reduced motion. Install Playwright test tooling separately and run this script; it writes fixtures and screenshots only under ignored `qa-output/`. The pull request verification workflow runs it without changing production dependencies or the existing Pages deployment workflow.
+
+### Release verification — 26 October 2026
+
+The coordinated release passes 99 Node tests, the static build, and the route/asset checker (14 HTML pages, 418 local links/assets). The seven original posts are checked against the supplied dates, titles, tags, source URLs and body hashes.
+
+Chromium acceptance also passes: archive filters and validation, URL history, pagination, reading history, mobile keyboard focus and scroll locking, 0/1/2/3/4/5/6/8/10-case collections at mobile/tablet/desktop sizes, reduced motion, cyclic navigation, previews, case detail links and restored selection after return. Real archive, article and homepage Blog layouts are checked at 390px and 1440px; the navigation breakpoint is checked through 900px/901px. Screenshots are retained by the PR verification workflow. The native section-link offset follows the responsive header height.
