@@ -36,3 +36,5 @@
 @media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu.is-closing{animation:none;transition:none}}
 
 .blog-preview>h2{font-size:clamp(36px,4vw,54px)}.motion-ready .empty-work{position:absolute;top:48%;left:0;width:100%}.case-carousel[hidden],.carousel-controls[hidden]{display:none!important}.case-carousel .window-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.case-carousel:not(.has-carousel) .case-windows{flex-wrap:wrap}
+
+.article-prose p{white-space:pre-line}
