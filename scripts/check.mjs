@@ -37,6 +37,7 @@ for(const file of files.filter(x=>x.endsWith('.mjs'))){
  }
 }
 // Check the built DOM hierarchy, not merely the presence of class strings.
+const content=JSON.parse(await readFile(path.join(root,'assets/content.json'),'utf8'));
 const source=await readFile(path.join(root,'index.html'),'utf8'),stack=[],nodes=[],voidTags=new Set(['meta','link','br','hr','img','input']);
 for(const tag of source.matchAll(/<(\/?)([a-z][\w-]*)\b([^>]*)>/gi)){
  const [,end,name,attrs]=tag;
@@ -49,17 +50,17 @@ const world=find('intro-world');
 for(const c of ['intro','skills','route-map'])if(!ancestors(find(c)).includes(world))failures.push(`${c} must share the intro world coordinates`);
 const portal=find('preview-layer');
 if(!portal||ancestors(portal).some(n=>has(n,'stage')||has(n,'journey'))||portal.parent?.name!=='body')failures.push('Preview must be a body portal outside the clipped stage');
-for(const c of ['case-slot','case-window'])if(nodes.filter(n=>has(n,c)).length!==4)failures.push(`Requires exactly four ${c} entrances`);
+for(const c of ['case-slot','case-window'])if(nodes.filter(n=>has(n,c)).length!==content.cases.length)failures.push(`Requires one ${c} entrance per published case`);
 if(nodes.filter(n=>has(n,'preview-card')).length!==1)failures.push('Requires one shared preview card');
 for(const node of nodes.filter(n=>has(n,'case-window')))if(node.name!=='a')failures.push('Initial project entrances must retain real links when JavaScript is unavailable');
 if(!find('case-carousel')||nodes.filter(n=>has(n,'carousel-arrow')).length!==2)failures.push('Requires one manual carousel with two arrows');
 if(nodes.filter(n=>has(n,'competency-toggle')).length!==4||nodes.filter(n=>has(n,'competency-panel')).length!==4)failures.push('Requires four independent competency explanations');
 if(find('ready-heading')?.parent!==world)failures.push('Takeoff heading must share route world coordinates');
-if(nodes.filter(n=>has(n,'project-title')).length!==4||find('open-case'))failures.push('Previews must navigate using their project heading');
-if(!source.includes('class="title-tail"'))failures.push('Project link arrow must stay with its last word');
+if(nodes.filter(n=>has(n,'project-title')).length!==content.cases.length||find('open-case'))failures.push('Previews must navigate using their project heading');
+if(content.cases.length&&!source.includes('class="title-tail"'))failures.push('Project link arrow must stay with its last word');
 for(const m of source.matchAll(/\baria-(?:controls|labelledby)="([^"]+)"/g))for(const id of m[1].split(/\s+/))if(!source.includes(`id="${id}"`))failures.push(`Missing accessible target ${id}`);
 for(const file of html){const body=await readFile(file,'utf8');if(/\S<br(?:\s[^>]*)?>/.test(body))failures.push(`${file}: line breaks must have real word separators`);}
-const content=JSON.parse(await readFile(path.join(root,'assets/content.json'),'utf8'));
+
 const embedded=source.match(/<script type="application\/json" id="site-data">([\s\S]*?)<\/script>/)?.[1];
 if(!embedded||JSON.stringify(JSON.parse(embedded).cases)!==JSON.stringify(content.cases))failures.push('Runtime cases must come from the same content configuration');
 const header=find('site-header');

@@ -1,0 +1,58 @@
+{
+  "status": "published",
+  "order": 40,
+  "short": "Internal tool",
+  "window": "Tool",
+  "icon": "tool",
+  "title": "Payment presets, easier to find and keep current.",
+  "category": "Internal systems · Operational tooling",
+  "summary": "An internal tool combining search, favourite payment presets and automated updates.",
+  "preview": "Search, favourite payment presets and automated updates. Access for 80+ staff.",
+  "scope": "80+ colleagues",
+  "scopeLabel": "Customer-facing employees with access",
+  "contribution": "Search, favourites and automation of preset updates.",
+  "sections": [
+    {
+      "id": "context",
+      "title": "Context & constraints",
+      "paragraphs": [
+        "The internal tool makes payment presets available to customer-facing teams. Access extends to more than 80 customer-facing employees."
+      ]
+    },
+    {
+      "id": "role",
+      "title": "My role",
+      "paragraphs": [
+        "Work on the tool brought together searching for presets, keeping favourites and automating updates."
+      ]
+    },
+    {
+      "id": "analysis",
+      "title": "Analysis & decisions",
+      "paragraphs": [
+        "Search and favourites provide two ways to retrieve presets. Automated updates support keeping the information current."
+      ]
+    },
+    {
+      "id": "implementation",
+      "title": "Implementation",
+      "paragraphs": [
+        "The resulting internal tool includes preset search, favourites and automated updates. Teams and management use it in their daily work."
+      ]
+    },
+    {
+      "id": "outcome",
+      "title": "Confirmed outcome",
+      "paragraphs": [
+        "The tool is used daily by teams and management, with access available to 80+ customer-facing employees."
+      ]
+    }
+  ],
+  "flow": [
+    "Payment presets",
+    "Search & favourites",
+    "Automated updates",
+    "Daily team use"
+  ],
+  "compact": "Search and favourite payment presets."
+}

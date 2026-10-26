@@ -31,3 +31,7 @@ The positioning sentence, competency labels, case names/order, headings, narrati
 The supplied WhatsApp handle does not establish a verified destination. A working share link was not available from the input; `wa.me/nikmorozovs` is not published.
 
 No financial savings, invented percentages, recommendations, star ratings, verification badges, internal screenshots or original input documents are published.
+
+## Blog migration
+
+Seven original English posts from `linkedin_posts_source(1).md` are published under `content/posts/`, dated 21 September–26 October 2026. The supplied working titles and suggested tags are used as article metadata. Original bodies, punctuation, dates and supplied LinkedIn short URLs are preserved; Markdown bullet and numbered lists are represented as semantic lists. No demonstration posts are published. An immutable import manifest checks the original body hashes, dates, titles, tags and links.

@@ -1,0 +1,58 @@
+{
+  "status": "published",
+  "order": 10,
+  "short": "Chat platform",
+  "window": "Chat",
+  "icon": "chat",
+  "title": "A chat platform built around regional access.",
+  "category": "Solution evaluation · Release planning",
+  "summary": "Comparing chat platforms, selecting Chatwoot and planning a self-hosted regional pilot.",
+  "preview": "Compared platforms and planned a self-hosted Chatwoot regional pilot.",
+  "scope": "Regional pilot",
+  "scopeLabel": "Delivery stage",
+  "contribution": "Comparison, requirements, stakeholder alignment and release planning.",
+  "sections": [
+    {
+      "id": "context",
+      "title": "Context & constraints",
+      "paragraphs": [
+        "Regional availability was a key constraint in the choice of a chat platform. The work considered alternative solutions and the option of self-hosting."
+      ]
+    },
+    {
+      "id": "role",
+      "title": "My role",
+      "paragraphs": [
+        "My contribution covered comparing options, defining requirements, aligning the choice with stakeholders and preparing the release plan."
+      ]
+    },
+    {
+      "id": "analysis",
+      "title": "Analysis & decisions",
+      "paragraphs": [
+        "The comparison led to the selection of Chatwoot. Self-hosting was chosen to address regional availability."
+      ]
+    },
+    {
+      "id": "implementation",
+      "title": "Implementation",
+      "paragraphs": [
+        "The agreed direction was translated into a release plan and a regional pilot. The confirmed delivery stage is a regional pilot."
+      ]
+    },
+    {
+      "id": "outcome",
+      "title": "Confirmed outcome",
+      "paragraphs": [
+        "Chatwoot was selected and taken into a self-hosted regional pilot."
+      ]
+    }
+  ],
+  "flow": [
+    "Regional constraints",
+    "Compare options",
+    "Align on Chatwoot",
+    "Regional pilot"
+  ],
+  "compact": "A self-hosted regional pilot."
+}

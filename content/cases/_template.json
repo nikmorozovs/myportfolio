@@ -1,0 +1,23 @@
+{
+  "status": "draft",
+  "order": null,
+  "short": "New case study",
+  "window": "New case",
+  "icon": null,
+  "title": "New case study",
+  "category": "Business Analysis",
+  "summary": "Short description.",
+  "preview": "Brief preview.",
+  "scope": "Project scope",
+  "scopeLabel": "Scope description",
+  "contribution": "My contribution",
+  "sections": [
+    {
+      "title": "Context",
+      "paragraphs": [
+        "Project context."
+      ]
+    }
+  ],
+  "flow": []
+}

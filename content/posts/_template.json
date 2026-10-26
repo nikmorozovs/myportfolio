@@ -1,0 +1,34 @@
+{
+  "status": "draft",
+  "title": "Article title",
+  "date": "2026-01-01",
+  "tags": [
+    "Business Analysis"
+  ],
+  "linkedinUrl": "https://www.linkedin.com/posts/replace-with-original",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "Original opening paragraph."
+    },
+    {
+      "type": "heading",
+      "text": "Subheading"
+    },
+    {
+      "type": "list",
+      "items": [
+        "First item."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": [
+        {
+          "text": "Link to a source",
+          "href": "https://example.com"
+        }
+      ]
+    }
+  ]
+}

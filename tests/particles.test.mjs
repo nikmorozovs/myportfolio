@@ -1,5 +1,6 @@
+import {sceneAt} from './site-fixture.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
-import {ParticleSystem,flowDirection,emissionAllowed,PARTICLES,particleSpeed} from '../src/particles.mjs';import {sceneAt,WORK,PHASE,END} from '../src/geometry.mjs';
+import {ParticleSystem,flowDirection,emissionAllowed,PARTICLES,particleSpeed} from '../src/particles.mjs';import {WORK,PHASE,END} from '../src/geometry.mjs';
 const pose=u=>sceneAt(u,1440,900);
 const random=()=>.43;
 test('flight flow moves up for nose-down, right for side flight and inward at the inlet',()=>{

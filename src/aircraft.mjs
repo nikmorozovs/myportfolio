@@ -29,9 +29,29 @@ function roundedRect(cx,cy,w,h,r,count=6){
   for(let j=0;j<=count;j++){const a=(k*.5+j/count*.5)*Math.PI;out.push([centres[k][0]+Math.cos(a)*r,centres[k][1]+Math.sin(a)*r]);}
  }out.push(out[0]);return out;
 }
-export const CASE_WINDOWS=Object.freeze([-1.5,-.5,.5,1.5].map((n,i)=>Object.freeze({i,x:AIRCRAFT.caseX+n*AIRCRAFT.windowPitch,y:AIRCRAFT.windowY,world:Object.freeze(bodyPoint(AIRCRAFT.caseX+n*AIRCRAFT.windowPitch,AIRCRAFT.windowY))})));
 const doorXs=[-326,-184,151,283];
-export const PASSENGER_WINDOWS=Object.freeze(Array.from({length:67},(_,i)=>(i-36.5)*AIRCRAFT.windowPitch).filter(x=>!doorXs.some(d=>Math.abs(x-d)<9)).map(x=>Object.freeze({x,y:11,caseIndex:CASE_WINDOWS.findIndex(c=>Math.abs(c.x-x)<.001)})));
+const layoutCache=new Map();
+/** One physical lattice, centred in the door-free cabin bay. All identities
+ * exist even when a narrow viewport shows a navigable subset. */
+export function caseWindowLayout(ids=[],width=1440,height=900){
+ const key=JSON.stringify([ids,width,height]);if(layoutCache.has(key))return layoutCache.get(key);
+ const count=ids.length,pitch=AIRCRAFT.windowPitch,halfSpan=(Math.max(1,count)-1)*pitch/2;
+ const clearance=11,limit=Math.min(...doorXs.map(x=>Math.abs(x-AIRCRAFT.caseX)))-clearance;
+ if(halfSpan+AIRCRAFT.windowWidth/2>limit)throw new RangeError(`The centred aircraft bay cannot fit ${count} cases at physical window pitch; widen the aircraft bay before publishing this collection.`);
+ const windows=ids.map((id,i)=>{const x=AIRCRAFT.caseX+(i-(count-1)/2)*pitch;return {id,i,x,y:AIRCRAFT.windowY,world:bodyPoint(x,AIRCRAFT.windowY)};});
+ // Minimum 66px pitch keeps touch targets separate. At larger widths allow
+ // labels to grow; at high counts the same calculation becomes a viewport.
+ const capacity=Math.max(1,Math.floor(width/66-.8)),visibleCount=Math.min(count,capacity);
+ const centre=bodyPoint(AIRCRAFT.caseX,AIRCRAFT.windowY),halfWidth=halfSpan+AIRCRAFT.windowWidth/2;
+ const bounds={min:[centre[0]-halfWidth,centre[1]-AIRCRAFT.windowHeight/2,centre[2]],max:[centre[0]+halfWidth,centre[1]+AIRCRAFT.windowHeight/2,centre[2]]};
+ const visibleBounds={min:windows[0]?.x-AIRCRAFT.windowWidth/2||bounds.min[0],max:windows[Math.max(0,visibleCount-1)]?.x+AIRCRAFT.windowWidth/2||bounds.max[0]};
+ const horizontalMargin=pitch*1.8-AIRCRAFT.windowWidth;
+ const scale=Math.min(width/(visibleBounds.max-visibleBounds.min+horizontalMargin),Math.max(40,height*.30)/(bounds.max[1]-bounds.min[1]));
+ const target=[(visibleBounds.min+visibleBounds.max)/2,(bounds.min[1]+bounds.max[1])/2,centre[2]];
+ const passengers=Array.from({length:67},(_,i)=>(i-36.5+(count%2?.5:0))*pitch).filter(x=>x>=-310&&x<=255&&!doorXs.some(d=>Math.abs(x-d)<9)).map(x=>({x,y:AIRCRAFT.windowY,caseIndex:windows.findIndex(c=>Math.abs(c.x-x)<.001)}));
+ const layout={ids:[...ids],count,windows,passengers,pitch,bounds,visibleBounds,centre,target,scale,visibleCount};
+ if(layoutCache.size>48)layoutCache.delete(layoutCache.keys().next().value);layoutCache.set(key,layout);return layout;
+}
 
 function loft(name,rings,{caps=true}={}){
  const vertices=rings.flat(),n=rings[0].length,faces=[];
@@ -106,15 +126,15 @@ function engine(sign,detail,meshes,curves){
 }
 
 const cache=new Map();
-export function getAircraft(level='overview'){
- if(cache.has(level))return cache.get(level);
+export function getAircraft(level='overview',layout=caseWindowLayout()){
+ const cacheKey=level+':'+layout.ids.join('|');if(cache.has(cacheKey))return cache.get(cacheKey);
  const detail=level==='detail',meshes=[],curves=[],radial=detail?80:56;
  const xs=detail?Array.from({length:87},(_,i)=>-400+i*480/86):sampleProfile(profiles,5).map(p=>p[0]);
  meshes.push(loft('fuselage',xs.map(x=>{const [cy,ry,rz]=profile(x);return Array.from({length:radial},(_,j)=>[x,cy+ry*Math.cos(TAU*j/radial),rz*Math.sin(TAU*j/radial)]);}),{caps:!detail}));
  if(!detail){meshes.push(wing(-1),stabiliser(-1),fin(),stabiliser(1));engine(-1,false,meshes,curves);}
  meshes.push(wing(1,detail));engine(1,detail,meshes,curves);
  for(const sign of detail?[1]:[-1,1]){
-  for(const w of PASSENGER_WINDOWS){
+  for(const w of layout.passengers){
    if(detail&&(w.x< -395||w.x>75))continue;
    curves.push({name:'passenger-window',windowX:w.x,caseIndex:sign===1?w.caseIndex:-1,normal:[0,.28,sign*.96],points:roundedRect(w.x,w.y,3.8,5,3.8*.38,5).map(([x,y])=>bodyPoint(x,y,sign))});
   }
@@ -124,11 +144,11 @@ export function getAircraft(level='overview'){
   }
  }
  for(const c of curves)if(['passenger-window','cockpit','door'].includes(c.name))c.bodyNormals=c.points.map(bodyNormal);
- const model={level,meshes,curves,anchors:{windows:CASE_WINDOWS.map(c=>[...c.world]),engine:[AIRCRAFT.engineX,AIRCRAFT.engineY,AIRCRAFT.engineZ],intake:[AIRCRAFT.intakeX,AIRCRAFT.engineY,AIRCRAFT.engineZ]},bvh:null,last:null};
+ const model={level,meshes,curves,anchors:{windows:layout.windows.map(c=>[...c.world]),engine:[AIRCRAFT.engineX,AIRCRAFT.engineY,AIRCRAFT.engineZ],intake:[AIRCRAFT.intakeX,AIRCRAFT.engineY,AIRCRAFT.engineZ]},bvh:null,last:null};
  // The runtime needs surface boundaries only. Build the heavier ray reference
  // lazily, so a model handoff does not allocate thousands of unused ray records.
  let triangles=null;Object.defineProperty(model,'triangles',{get(){return triangles??=meshes.flatMap(m=>m.faces.map(f=>{const a=m.vertices[f[0]],b=m.vertices[f[1]],c=m.vertices[f[2]];return{a,e1:sub(b,a),e2:sub(c,a),min:[0,1,2].map(k=>Math.min(a[k],b[k],c[k])),max:[0,1,2].map(k=>Math.max(a[k],b[k],c[k])),centre:[0,1,2].map(k=>(a[k]+b[k]+c[k])/3)};}));}});
- cache.set(level,model);return model;
+ cache.set(cacheKey,model);return model;
 }
 function buildBVH(ts){
  const min=[0,1,2].map(k=>Math.min(...ts.map(t=>t.min[k]))),max=[0,1,2].map(k=>Math.max(...ts.map(t=>t.max[k])));
@@ -193,7 +213,7 @@ function hull(points){
 const num=x=>Number(x.toFixed(2));
 function segmentPath(segments,P,rect){let out='';for(const [a,b]of segments){const p=P(a),q=P(b);if(Math.max(p[0],q[0])<rect.x||Math.min(p[0],q[0])>rect.x+rect.width||Math.max(p[1],q[1])<rect.y||Math.min(p[1],q[1])>rect.y+rect.height)continue;out+=`M${num(p[0])},${num(p[1])}L${num(q[0])},${num(q[1])}`;}return out;}
 export function referenceAircraftSVG(s,{hideCaseWindows=false}={}){
- const model=getAircraft(s.model),P=s.project,rect=s.clip,visible=visibleGeometry(model,s.axes);
+ const model=getAircraft(s.model,s.caseLayout),P=s.project,rect=s.clip,visible=visibleGeometry(model,s.axes);
  const tx=dot(s.axes[0],s.target),ty=dot(s.axes[1],s.target);
  const masks=visible.masks.map(ps=>`<path d="M${ps.map(p=>[num(s.center[0]+(p[0]-tx)*s.scale),num(s.center[1]-(p[1]-ty)*s.scale)].join(',')).join('L')}Z" fill="#F6F5F0" stroke="none"/>`).join('');
  const outline=segmentPath(visible.segments,P,rect);
@@ -263,18 +283,18 @@ export function rotateFanPoint(point,angle,sign=1){const y=point[1]-AIRCRAFT.eng
 /** Screen-space opaque silhouettes also describe the particle occlusion layer. */
 export function aircraftOcclusion(s){
  const tx=dot(s.axes[0],s.target),ty=dot(s.axes[1],s.target),screen=ps=>ps.map(p=>[s.center[0]+(p[0]-tx)*s.scale,s.center[1]-(p[1]-ty)*s.scale]);
- return quickGeometry(getAircraft(s.model),s.axes).flatMap(c=>(c.engine?[c.mask,c.pylonMask]:c.maskLoops||[c.mask]).map(p=>({part:c.name,points:screen(p)})));
+ return quickGeometry(getAircraft(s.model,s.caseLayout),s.axes).flatMap(c=>(c.engine?[c.mask,c.pylonMask]:c.maskLoops||[c.mask]).map(p=>({part:c.name,points:screen(p)})));
 }
 export function cabinPatternVisible(s){
  const r=s.clip;
- return getAircraft(s.model).curves.filter(c=>c.name==='passenger-window').some(c=>{
+ return getAircraft(s.model,s.caseLayout).curves.filter(c=>c.name==='passenger-window').some(c=>{
   if(c.normal&&dot(c.normal,s.axes[2])<=0)return false;
   const ps=c.points.map(s.project),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]);
   return Math.max(...xs)>=r.x-12&&Math.min(...xs)<=r.x+r.width+12&&Math.max(...ys)>=r.y-12&&Math.min(...ys)<=r.y+r.height+12;
  });
 }
 export function aircraftSVG(s,{hideCaseWindows=false,hideCabinWindows=false,windowPhase=0}={}){
- const model=getAircraft(s.model),P=s.project,axes=s.axes,tx=dot(axes[0],s.target),ty=dot(axes[1],s.target),rect=s.clip;
+ const model=getAircraft(s.model,s.caseLayout),P=s.project,axes=s.axes,tx=dot(axes[0],s.target),ty=dot(axes[1],s.target),rect=s.clip;
  const screenHull=ps=>ps.map(p=>[s.center[0]+(p[0]-tx)*s.scale,s.center[1]-(p[1]-ty)*s.scale]);
  const path2=ps=>`M${ps.map(p=>p.map(num).join(',')).join('L')}Z`;
  const mask=ps=>`<path d="${path2(screenHull(ps))}" fill="#F6F5F0" stroke="none"/>`;

@@ -1,9 +1,11 @@
+import {sceneAt} from './site-fixture.mjs';
+import {data as fixtureData} from './site-fixture.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 import {carouselFrame,carouselLayout,CarouselGesture,mountCarousel,CAROUSEL} from '../src/carousel.mjs';
-import {sceneAt,PHASE} from '../src/geometry.mjs';import {domContract} from './dom-contract.mjs';
-const data=JSON.parse(readFileSync(new URL('../src/content.json',import.meta.url),'utf8')),projects=data.cases;
+import {PHASE} from '../src/geometry.mjs';import {domContract} from './dom-contract.mjs';
+const data=fixtureData,projects=data.cases;
 const close=(a,b,e=1e-5)=>assert.ok(Math.abs(a-b)<e,`${a} != ${b}`);
-function fixture(options={}){const f=domContract(options),root=f.element('div','case-carousel',undefined,{width:options.width||390,height:options.height||844}),viewport=f.element('div','carousel-viewport',root),track=f.element('div','case-windows',viewport),controls=f.element('div','carousel-controls',root),prev=f.element('button','',controls),next=f.element('button','',controls),status=f.element('p','carousel-status',root);prev.dataset.carouselControl='previous';next.dataset.carouselControl='next';let canMove=true;const carousel=mountCarousel({root,projects,ui:data.ui,canMove:()=>canMove,reduced:()=>!!options.reduced,now:f.now});carousel.setState(sceneAt(PHASE.hold,options.width||390,options.height||844));return{...f,root,viewport,track,prev,next,status,carousel,set canMove(value){canMove=value;},source:()=>root.querySelector('.case-window')};}
+function fixture(options={}){const f=domContract(options),root=f.element('div','case-carousel',undefined,{width:options.width||390,height:options.height||844}),viewport=f.element('div','carousel-viewport',root),track=f.element('div','case-windows',viewport),controls=f.element('div','carousel-controls',root),prev=f.element('button','',controls),next=f.element('button','',controls),status=f.element('p','carousel-status',root);prev.dataset.carouselControl='previous';next.dataset.carouselControl='next';let canMove=true;const carousel=mountCarousel({root,projects:options.projects||projects,ui:data.ui,canMove:()=>canMove,reduced:()=>!!options.reduced,now:f.now});carousel.setState(sceneAt(PHASE.hold,options.width||390,options.height||844,{caseIds:(options.projects||projects).map(p=>p.id)}));return{...f,root,viewport,track,prev,next,status,carousel,set canMove(value){canMove=value;},source:()=>root.querySelector('.case-window')};}
 function use(fn,options){const f=fixture(options);try{fn(f);}finally{f.cleanup();}}
 test('every periodic carousel frame exposes four distinct stable projects and four inaccessible copies',()=>{
  for(let n=-160;n<160;n++){const f=carouselFrame(n/7,projects),main=f.items.filter(i=>i.active);assert.equal(main.length,4);assert.equal(new Set(main.map(i=>i.project.id)).size,4);assert.equal(f.items.filter(i=>!i.active).length,4);for(const i of main)assert.equal(i.project,projects.find(p=>p.id===i.project.id));}
@@ -48,3 +50,18 @@ test('orientation resize releases the old drag capture and settles using the new
 test('reduced-motion document flow hides the presentation without removing keyboard entry controls',()=>use(f=>{
  f.carousel.setState(null);f.carousel.setSectionVisible(false);assert.equal(f.next.disabled,true);for(const slot of f.root.querySelectorAll('.case-slot'))assert.equal(slot.inert,false);const old=f.carousel.position;f.next.emit('click');assert.equal(f.carousel.position,old);f.carousel.setSectionVisible(true);f.next.emit('click');close(f.carousel.position,old+1);
 },{reduced:true}));
+
+test('all collection sizes preserve arrow/key loops, touch identity and inert helpers',()=>{
+ for(const count of [0,1,2,3,4,5,6,8,10]){
+  const collection=Array.from({length:count},(_,i)=>({...projects[0],id:`case-${i}`,short:`Case ${i}`,window:`Case ${i}`}));
+  use(f=>{assert.equal(f.next.disabled,count<2);assert.equal(f.prev.disabled,count<2);if(!count){assert.equal(f.root.querySelectorAll('.case-window').length,0);f.next.emit('click');assert.equal(f.carousel.position,0);return;}
+   if(count===1){f.next.emit('click');f.root.emit('keydown',{key:'ArrowRight'});assert.equal(f.carousel.position,0);assert.equal(f.root.querySelectorAll('.case-copy').length,0);return;}
+   for(let step=1;step<=count;step++){f.next.emit('click');f.advance(260);assert.equal(f.source().dataset.projectId,collection[step%count].id);}
+   f.source().focus();f.root.emit('keydown',{key:'ArrowLeft'});f.advance(260);assert.equal(f.source().dataset.projectId,collection[count-1].id);assert.ok(f.root.contains(f.document.activeElement));
+   f.carousel.restore(123,collection[0].id);assert.equal(f.carousel.position,0);
+   const pitch=carouselLayout(sceneAt(PHASE.hold,390,844,{caseIds:collection.map(p=>p.id)})).pitch;
+   f.source().emit('pointerdown',{pointerType:'touch',clientX:200,clientY:460});f.document.emit('pointermove',{pointerType:'touch',clientX:200-pitch*.75,clientY:461});f.document.emit('pointerup',{pointerType:'touch'});f.advance(260);assert.equal(f.source().dataset.projectId,collection[1].id);
+   for(const copy of f.root.querySelectorAll('.case-copy')){assert.equal(copy.inert,true);assert.equal(copy.getAttribute('aria-hidden'),'true');assert.equal(copy.querySelector('button'),null);}
+  },{projects:collection});
+ }
+});

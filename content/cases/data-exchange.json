@@ -1,0 +1,58 @@
+{
+  "status": "published",
+  "order": 30,
+  "short": "Data exchange",
+  "window": "Data",
+  "icon": "data",
+  "title": "Finding the sequence behind a data defect.",
+  "category": "Process analysis · Defect investigation",
+  "summary": "Comparing successful and failed records to identify a process-sequence error and give developers a clear finding.",
+  "preview": "Record comparison uncovered a sequence error for developers to resolve.",
+  "scope": "Process sequence",
+  "scopeLabel": "Root cause identified",
+  "contribution": "Record comparison, process analysis and findings for developers.",
+  "sections": [
+    {
+      "id": "context",
+      "title": "Context & constraints",
+      "paragraphs": [
+        "Some records passed through the data exchange process successfully while others failed. The defect also created a need for manual corrections."
+      ]
+    },
+    {
+      "id": "role",
+      "title": "My role",
+      "paragraphs": [
+        "I compared successful and unsuccessful records and investigated the sequence of the process. I then provided the findings to developers."
+      ]
+    },
+    {
+      "id": "analysis",
+      "title": "Analysis & decisions",
+      "paragraphs": [
+        "The comparison revealed an error in the order of process operations. This connected the failed records to a specific process-sequence issue."
+      ]
+    },
+    {
+      "id": "implementation",
+      "title": "Implementation",
+      "paragraphs": [
+        "Developers changed the process using the analytical findings. The analysis and the implementation are distinct contributions."
+      ]
+    },
+    {
+      "id": "outcome",
+      "title": "Confirmed outcome",
+      "paragraphs": [
+        "The developers’ process change eliminated the defect and its associated manual corrections."
+      ]
+    }
+  ],
+  "flow": [
+    "Compare records",
+    "Trace the sequence",
+    "Share the finding",
+    "Developers fix process"
+  ],
+  "compact": "Finding a process sequence error."
+}

@@ -1,5 +1,6 @@
+import {sceneAt} from './site-fixture.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
-import {sceneAt,PHASE,S4_TIMING,runwayLayout,TAKEOFF,takeoffPose,routeMapSVG,WORK,END} from '../src/geometry.mjs';
+import {PHASE,S4_TIMING,runwayLayout,TAKEOFF,takeoffPose,routeMapSVG,WORK,END} from '../src/geometry.mjs';
 import {AIRCRAFT,getAircraft,aircraftSVG,cabinPatternVisible} from '../src/aircraft.mjs';import {workProgress} from '../src/layout.mjs';
 const sizes=[[320,568],[360,640],[390,844],[568,320],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]],close=(a,b,e=1e-4)=>assert.ok(Math.abs(a-b)<e,`${a} != ${b}`);
 test('the miniature is already visible and stationary on the runway before the roll starts',()=>{

@@ -1,0 +1,54 @@
+{
+  "status": "published",
+  "title": "Lost in Translation: What Stakeholders Really Mean",
+  "date": "2026-09-21",
+  "tags": [
+    "Business Analysis",
+    "Stakeholder Management",
+    "Requirements"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/d-PhRKKx",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "If I could give myself one piece of advice at the start of my transition into business analysis, it would be this: don’t put away what support already taught you."
+    },
+    {
+      "type": "paragraph",
+      "text": "One thing those years taught me is that people rarely describe a problem in the language of the solution. And I believe this applies to stakeholders just as much as it applies to consumers."
+    },
+    {
+      "type": "paragraph",
+      "text": "A consumer does not need to understand how a product works internally. They know what they are trying to achieve, what is getting in their way, and what they expect to happen. In many ways, stakeholders are similar."
+    },
+    {
+      "type": "paragraph",
+      "text": "Their role is not necessarily to describe the system, define every edge case, or explain how a solution should be implemented. Very often, they speak in the language of desired outcomes:"
+    },
+    {
+      "type": "paragraph",
+      "text": "“We need users to be able to do X.”\n“Process Y should become faster.”\n“We need more visibility in Z.”"
+    },
+    {
+      "type": "paragraph",
+      "text": "The language of engineering is different. It has to be structured, precise, and unambiguous — detailed enough to build the right thing, rather than merely something that works."
+    },
+    {
+      "type": "paragraph",
+      "text": "And somewhere between those two languages sits the Business Analyst. Not just as a messenger or a translator, but as a localizer — someone who adapts the meaning, context, and intent of a request to make it work in another professional language."
+    },
+    {
+      "type": "paragraph",
+      "text": "Understanding what someone wants, exploring why they want it, identifying constraints and exceptions, challenging assumptions where necessary, and eventually turning that intent into something developers and engineers can work with."
+    },
+    {
+      "type": "paragraph",
+      "text": "In support, I learned to understand what people are actually trying to achieve. Today, in a different role, I keep coming back to the same question: what are we actually trying to achieve here, what’s the end result we care about?"
+    },
+    {
+      "type": "paragraph",
+      "text": "Different customer. Different language. Same question."
+    }
+  ]
+}

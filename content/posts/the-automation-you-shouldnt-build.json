@@ -1,0 +1,58 @@
+{
+  "status": "published",
+  "title": "The Automation You Shouldn’t Build",
+  "date": "2026-10-05",
+  "tags": [
+    "Automation",
+    "Business Analysis",
+    "Stakeholder Management"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/dzreik6a",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "One of the fastest ways to waste money is to build exactly the automation your stakeholder asked for. Not because the stakeholder is wrong, because the request is where analysis starts, not where it ends."
+    },
+    {
+      "type": "paragraph",
+      "text": "Stakeholders often understand the business outcome very well. Like any of us, they tend to express a need through the solution they already have in mind: \"Automate this.\" \"Remove this manual step.\" \"Build this integration.\" Even when the request comes directly from management, it’s still an input into analysis, not a final spec."
+    },
+    {
+      "type": "paragraph",
+      "text": "One proposal I encountered was to automatically notify stakeholders whenever critical incidents occurred. Technically, it was straightforward. The useful question was different: what should happen differently once someone receives that notification? The support engineers responsible for these incidents were already handling them, so would the additional notification trigger a decision, an escalation, faster resolution, better visibility that someone actually needed, or any other meaningful outcome? Without a clear answer, we risked adding another notification without knowing what value it was supposed to create."
+    },
+    {
+      "type": "paragraph",
+      "text": "\"Why?\" is a starting point, not the analysis itself. What actually moves things forward is asking what problem we’re solving, who gets the result, what that person will do differently once it’s automated, and what happens if nothing changes at all. Ultimately, I want every optimization request to answer one question: what measurable outcome gets better?"
+    },
+    {
+      "type": "paragraph",
+      "text": "It doesn’t have to be direct cost savings — faster responses, fewer errors, greater capacity, lower risk, better decisions, or a better customer or employee experience can all justify automation. But the benefit needs to be identifiable."
+    },
+    {
+      "type": "paragraph",
+      "text": "So does the cost. Development and testing are only the beginning, while maintenance, monitoring, training, dependencies, and future changes introduce ongoing work and new failure modes of their own."
+    },
+    {
+      "type": "paragraph",
+      "text": "Are we removing complexity, or just moving it somewhere less visible?"
+    },
+    {
+      "type": "paragraph",
+      "text": "And optimization shouldn’t automatically mean removing people from the process. A manual step shouldn’t be kept simply because it already exists, but it shouldn’t be removed simply because technology makes that possible either. Often the strongest process combines both: machines handle the repetitive, predictable work: people handle ambiguity, judgment, and exceptions."
+    },
+    {
+      "type": "paragraph",
+      "text": "Maximum automation doesn’t guarantee maximum business value. For me, stakeholder management means making that trade-off discussable — clarifying the problem, agreeing on the outcome, examining what happens if nothing changes, and comparing the proposal with simpler alternatives. Challenging a solution with evidence, reasoning, and respect is part of taking the stakeholder’s goal seriously."
+    },
+    {
+      "type": "paragraph",
+      "text": "Sometimes the best automation is the one you decide not to build."
+    },
+    {
+      "type": "paragraph",
+      "text": "The goal of optimization is a better business outcome. The amount of automation is a design choice."
+    }
+  ]
+}

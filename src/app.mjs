@@ -4,7 +4,7 @@ import {ScrollNavigator,bindNavigationInterrupts} from './navigation.mjs';
 import {mountParticles} from './particles.mjs';
 import {mountRouteMotion} from './route-motion.mjs';
 import {mountPreviews} from './preview.mjs';
-import {getAircraft,cabinPatternVisible} from './aircraft.mjs';
+import {getAircraft,caseWindowLayout,cabinPatternVisible} from './aircraft.mjs';
 import {mountCarousel} from './carousel.mjs';
 import {mountCompetencies} from './competencies.mjs';
 import {headingHTML,metricValue} from './content.mjs';
@@ -19,6 +19,7 @@ const write=(key,value)=>{try{sessionStorage.setItem(key,JSON.stringify(value));
 $$('[data-return]').forEach(a=>a.addEventListener('click',()=>write('portfolio:return',true)));
 let motion=false,state=null,w=0,h=0,headerHeight=0,safeBottom=0,unit=1,start=0,target=0,basisHeight=0,raf=0,resizeTimer=0,reading=null,modelsQueued=false;
 const svg=$('.scene'),world=$('.intro-world'),route=$('.route-map'),intro=$('.intro'),skills=$('.skills'),work=$('.work-zone'),track=$('.about-track'),about=$('#about');
+let caseLayout=null;
 let aircraftGroup=null,particles=null,previews=null,carousel=null,competencies=null,routeMotion=null;
 const maxScroll=()=>Math.max(0,root.scrollHeight-innerHeight);
 const documentTop=el=>el.getBoundingClientRect().top+scrollY;
@@ -44,7 +45,7 @@ if(journey){
 }
 function paint(){
  if(!motion)return;
- state=sceneAt(target,w,h,{unit});
+ state=sceneAt(target,w,h,{unit,caseLayout});
  world.style.transform=`translate3d(0,${-state.travel}px,0)`;
  carousel.setState(state);if(carousel.phase&&!state.caseReady)carousel.normalizeWhenHidden(!cabinPatternVisible(state));
  svg.innerHTML=sceneSVG(state,{hideCabinWindows:state.caseReady,windowPhase:carousel.phase});aircraftGroup=$('.aircraft-motion',svg);
@@ -89,11 +90,12 @@ function measure(preserve=false){
  const orientation=Math.abs(w-oldW)>40||Math.abs(h-oldH)>200;
  if(!basisHeight||orientation)basisHeight=h;
  unit=scrollUnit(w,basisHeight);
+ caseLayout=caseWindowLayout(content?.cases.map(c=>c.id)||[],w,h);
  root.style.setProperty('--viewport-height',`${h}px`);root.style.setProperty('--scrollport-height',`${Math.max(h,innerHeight,root.clientHeight)}px`);
  headerHeight=header?.getBoundingClientRect().height||0;safeBottom=parseFloat(getComputedStyle(root).getPropertyValue('--safe-bottom'))||0;
  if(motion){
   start=documentTop(journey);journey.style.setProperty('--stage-height',`${h}px`);journey.style.setProperty('--journey-height',`${h+END*unit}px`);
-  const layout=sceneAt(0,w,h,{unit}).intro;world.style.height=`${layout.worldHeight}px`;route.setAttribute('viewBox',`0 0 ${w} ${layout.worldHeight}`);route.style.height=`${layout.worldHeight}px`;route.innerHTML=routeMapSVG(w,h,unit);skills.style.top=`${layout.labelsY}px`;const ready=$('.ready-heading');ready.style.top=`${layout.readyY}px`;ready.style.width=`${layout.readyWidth}px`;svg.setAttribute('viewBox',`0 0 ${w} ${h}`);routeMotion?.refresh();
+  const layout=sceneAt(0,w,h,{unit,caseLayout}).intro;world.style.height=`${layout.worldHeight}px`;route.setAttribute('viewBox',`0 0 ${w} ${layout.worldHeight}`);route.style.height=`${layout.worldHeight}px`;route.innerHTML=routeMapSVG(w,h,unit);skills.style.top=`${layout.labelsY}px`;const ready=$('.ready-heading');ready.style.top=`${layout.readyY}px`;ready.style.width=`${layout.readyWidth}px`;svg.setAttribute('viewBox',`0 0 ${w} ${h}`);routeMotion?.refresh();
  }
  if(track&&about){reading=aboutTrack({viewportHeight:h,headerHeight,contentHeight:about.getBoundingClientRect().height});track.style.setProperty('--about-track-height',`${reading.trackHeight}px`);track.style.setProperty('--about-pin-top',`${reading.stickyTop}px`);}
  if(preserve&&orientation&&motion&&old>0&&old<END&&!wasNavigating)scrollTo({top:start+old*unit,behavior:'auto'});
@@ -106,12 +108,12 @@ function setup(){
  if(reduced.matches){reset();measure();return;}
  try{
   motion=true;journey.classList.add('motion-ready');root.classList.add('motion-enabled');measure();
-  if(!modelsQueued){modelsQueued=true;const idle=globalThis.requestIdleCallback?fn=>requestIdleCallback(fn,{timeout:1200}):fn=>setTimeout(fn,60);idle(()=>{getAircraft('overview');idle(()=>getAircraft('detail'));});}
+  if(!modelsQueued){modelsQueued=true;const idle=globalThis.requestIdleCallback?fn=>requestIdleCallback(fn,{timeout:1200}):fn=>setTimeout(fn,60);idle(()=>{getAircraft('overview',caseLayout);idle(()=>getAircraft('detail',caseLayout));});}
  }catch(error){failed(error);}
 }
 function restore(){
  const back=read('portfolio:return')||performance.getEntriesByType('navigation')[0]?.type==='back_forward',saved=read('portfolio:work');write('portfolio:return',false);
- if(motion&&back&&location.hash==='#work'&&saved?.u>=PHASE.hold&&saved.u<PHASE.pan){carousel.restore(saved.carousel||0);previews.restoreSelected(saved.projectId||null);scrollTo({top:start+clamp(saved.u,PHASE.hold+.25,PHASE.pan-.5)*unit,behavior:'auto'});queue();return;}
+ if(motion&&back&&location.hash==='#work'&&saved?.u>=PHASE.hold&&saved.u<PHASE.pan){carousel.restore(saved.carousel||0,saved.projectId);previews.restoreSelected(saved.projectId||null);scrollTo({top:start+clamp(saved.u,PHASE.hold+.25,PHASE.pan-.5)*unit,behavior:'auto'});queue();return;}
  if(location.hash)scrollNav.go(decodeURIComponent(location.hash.slice(1)),{instant:true,focus:false});
 }
 $$('a[href^="#"]').forEach(link=>link.addEventListener('click',event=>{
