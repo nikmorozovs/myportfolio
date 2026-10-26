@@ -1,0 +1,62 @@
+{
+  "status": "published",
+  "title": "The Broken Process Everyone Has Learned to Ignore",
+  "date": "2026-09-28",
+  "tags": [
+    "Process Improvement",
+    "Business Analysis"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/dChYKuXU",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "You probably have a broken process everyone has already learned to live with. Give me 5 minutes and I’ll help you find it."
+    },
+    {
+      "type": "paragraph",
+      "text": "The longer people work around a problem, the less it looks like a problem. They adapt: they memorize the exceptions, write a dictionary just to keep communication between two teams intact (sometimes new ones for each project), and build two layers of workarounds — a second one just to manage the first. Over time, all of that starts to feel like just… how the work gets done."
+    },
+    {
+      "type": "paragraph",
+      "text": "An edge case that happens every week. A workaround everyone on the team knows. The same requirement, interpreted differently by different people. None of these automatically means the process is broken, but all of them are signals that the process as designed and the process as actually used may have drifted apart."
+    },
+    {
+      "type": "paragraph",
+      "text": "Sometimes what looks like an exception, a workaround, or a bit of ambiguity is really an unasked question hiding in plain sight. Why do we do it this way? \"Because that's how we’ve always done it\" might explain how we got here, but it doesn’t tell us whether it still makes sense."
+    },
+    {
+      "type": "paragraph",
+      "text": "And sometimes that unasked question can change everything."
+    },
+    {
+      "type": "paragraph",
+      "text": "You don’t need a full audit to surface these questions. Pick a process your team uses regularly and ask yourself:"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Where do we regularly deviate from the intended flow?",
+        "Which \"exceptions\" keep happening?",
+        "What do we do manually because the process or system doesn’t support us?",
+        "What do we explain to newcomers with, \"Technically it works like this, but in reality…\"?"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "If any of these questions immediately brings something to mind, you haven’t necessarily found something that must change. You’ve found something worth questioning. And turning that into a real problem the business can discuss is where the actual analysis starts."
+    },
+    {
+      "type": "paragraph",
+      "text": "\"That’s just how it works\" is the beginning of analysis, not the end of it."
+    },
+    {
+      "type": "paragraph",
+      "text": "Sometimes the problem isn’t hidden. Everyone already knows about it. They’ve just stopped seeing it as a problem."
+    },
+    {
+      "type": "paragraph",
+      "text": "A good question can make it visible again."
+    }
+  ]
+}

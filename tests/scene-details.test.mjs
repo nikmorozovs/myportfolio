@@ -1,5 +1,6 @@
+import {sceneAt} from './site-fixture.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
-import {sceneAt,sceneSVG,routeMapSVG,runwayLayout,RUNWAY,PHASE,END,STROKE,scrollUnit} from '../src/geometry.mjs';
+import {sceneSVG,routeMapSVG,runwayLayout,RUNWAY,PHASE,END,STROKE,scrollUnit} from '../src/geometry.mjs';
 import {AIRCRAFT,getAircraft,aircraftOcclusion,pointVisible,rotateFanPoint} from '../src/aircraft.mjs';
 const sizes=[[320,568],[390,844],[568,320],[844,390],[1440,900],[1920,1080]];
 const close=(a,b,e=1e-5)=>assert.ok(Math.abs(a-b)<e,`${a} ≠ ${b}`);

@@ -1,0 +1,54 @@
+{
+  "status": "published",
+  "title": "The Process That Lived in One Person’s Head",
+  "date": "2026-10-12",
+  "tags": [
+    "Process Improvement",
+    "Documentation",
+    "Business Analysis"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/dYCD7fJM",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "Why does a \"fully documented\" process fall apart the moment one person is out?"
+    },
+    {
+      "type": "paragraph",
+      "text": "The SOP covered every routine case, and the team had followed it for months. Then a case came up outside the usual path. The person who normally handled those was unavailable, so the question got escalated, and while everyone waited, someone guessed. By the time clarification arrived, the decision had already been made."
+    },
+    {
+      "type": "paragraph",
+      "text": "Looking back, the SOP did have an answer: for a list of situations, the instruction was simply to contact the \"guy\". The documented process ended exactly where the real decisions began, and those lived in one person’s head."
+    },
+    {
+      "type": "paragraph",
+      "text": "I’ve seen versions of this in support, quality, and operations. Reading the documentation more carefully wouldn’t have helped. The rule was never written down."
+    },
+    {
+      "type": "paragraph",
+      "text": "That’s why I see documentation as one of the most underrated skills of a good Business Analyst."
+    },
+    {
+      "type": "paragraph",
+      "text": "Writing a process clearly enough for someone else to execute makes ambiguity visible:"
+    },
+    {
+      "type": "list",
+      "items": [
+        "who decides here?",
+        "what happens when the condition isn’t met?",
+        "which source should the team trust?"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Sometimes the difficulty isn’t finding the right words. It’s discovering the process was never fully defined. Once those decisions are written down, they stop living in one person’s head. They become rules the business can own."
+    },
+    {
+      "type": "paragraph",
+      "text": "That’s what turns a process from something a person knows into something a business actually knows."
+    }
+  ]
+}

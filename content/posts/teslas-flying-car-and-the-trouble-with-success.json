@@ -1,0 +1,37 @@
+{
+  "status": "published",
+  "title": "Tesla’s Flying Car and the Trouble With Success",
+  "date": "2026-10-16",
+  "tags": [
+    "Product Strategy",
+    "Requirements"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/dnE-Y-ne",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "Tesla’s new “flying car” would be terrible at flying you to work. That might also be the least interesting thing about it."
+    },
+    {
+      "type": "paragraph",
+      "text": "On October 15, Tesla showed an unmanned Roadster prototype clinging upside down to a curved structure using suction fans, then jumping and rotating with compressed-gas thrusters. It was spectacular, but not sustained flight, and certainly not proof of what a production model will deliver."
+    },
+    {
+      "type": "paragraph",
+      "text": "Musk was explicit about one part of the appeal: the car “takes the fun meter to 11 out of 10.” That’s a different pitch from an airborne commute."
+    },
+    {
+      "type": "paragraph",
+      "text": "A shared deliverable isn’t the same as a shared definition of success."
+    },
+    {
+      "type": "paragraph",
+      "text": "That’s a familiar BA problem. One stakeholder imagines a breakthrough experience, another expects practical functionality, a third wants a viable business outcome. If those expectations stay implicit, everyone can approve the same requirement and picture a different finish line. Defining success means agreeing beforehand on the outcome, the constraints, and the evidence that would prove it. Fun is a legitimate product goal. It doesn’t settle safety, practicality, or commercial viability. A remarkable demo answers “can it do this?”"
+    },
+    {
+      "type": "paragraph",
+      "text": "Success starts with “what did we actually want?”"
+    }
+  ]
+}

@@ -118,3 +118,6 @@ html{scroll-behavior:auto}
 .scene-error .case-carousel{display:none!important}
 .scene-error .accessible-catalogue{display:grid;gap:18px;margin-top:40px}
 .scene-error .accessible-catalogue a{display:block;border-bottom:1.5px solid var(--rule);padding-bottom:12px}
+
+/* Native deep links and custom navigation use the same responsive header. */
+html{scroll-padding-top:var(--header-height,100px)}

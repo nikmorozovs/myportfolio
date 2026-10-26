@@ -1,7 +1,8 @@
+import {data as fixtureData} from './site-fixture.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {mountPreviews} from '../src/preview.mjs';import {domContract} from './dom-contract.mjs';
-const data=JSON.parse(readFileSync(new URL('../src/content.json',import.meta.url),'utf8'));
+const data=fixtureData;
 function fixture(options={}){
  const f=domContract(options),el=f.element,root=el('section','work-zone'),layer=el('div','preview-layer'),card=el('article','preview-card',layer),button=el('button','preview-close',card),content=el('div','preview-content',card),outside=el('button','outside'),arrow=el('button','carousel-arrow',root);arrow.dataset.carouselControl='next';layer.hidden=true;
  const sources=data.cases.map((p,i)=>{const source=el('button','case-window',root,{left:30+i*80,top:400,width:45,height:60});source.dataset.projectId=p.id;return source;});

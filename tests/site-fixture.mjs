@@ -1,0 +1,10 @@
+import {readFile} from 'node:fs/promises';
+import {loadCollections} from '../scripts/content-loader.mjs';
+import {sceneAt as calculateScene} from '../src/geometry.mjs';
+import {getAircraft as model,caseWindowLayout} from '../src/aircraft.mjs';
+export const data={...JSON.parse(await readFile(new URL('../src/content.json',import.meta.url),'utf8')),...await loadCollections(new URL('../content/',import.meta.url).pathname)};
+export const caseIds=data.cases.map(c=>c.id);
+export const sceneAt=(u,w,h,options={})=>calculateScene(u,w,h,{caseIds,...options});
+export const CASE_WINDOWS=caseWindowLayout(caseIds).windows;
+export const PASSENGER_WINDOWS=caseWindowLayout(caseIds).passengers;
+export const getAircraft=(level='overview')=>model(level,caseWindowLayout(caseIds));

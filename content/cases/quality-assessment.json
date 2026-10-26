@@ -1,0 +1,58 @@
+{
+  "status": "published",
+  "order": 20,
+  "short": "Quality assessment",
+  "window": "Quality",
+  "icon": "quality",
+  "title": "A common framework for assessing quality.",
+  "category": "Process design · Google Sheets",
+  "summary": "A Google Sheets assessment system with weighted criteria, shared rules and privacy for bonus information.",
+  "preview": "Weighted assessment criteria for two departments and more than 30 people.",
+  "scope": "2 departments",
+  "scopeLabel": "More than 30 people in scope",
+  "contribution": "Weighted criteria and rules, result comparison, privacy and synchronisation.",
+  "sections": [
+    {
+      "id": "context",
+      "title": "Context & constraints",
+      "paragraphs": [
+        "The quality assessment system covers two departments and more than 30 people in total. Bonus-related information needed to remain private."
+      ]
+    },
+    {
+      "id": "role",
+      "title": "My role",
+      "paragraphs": [
+        "My work brought together assessment criteria, their weights and the rules used to interpret results. Comparison and synchronisation were part of the system."
+      ]
+    },
+    {
+      "id": "analysis",
+      "title": "Analysis & decisions",
+      "paragraphs": [
+        "The system uses weighted criteria rather than an unqualified total. Rules support comparison of results, while access to bonus information remains separate."
+      ]
+    },
+    {
+      "id": "implementation",
+      "title": "Implementation",
+      "paragraphs": [
+        "Google Sheets was used for the assessment system, including result comparison, synchronisation and privacy for bonus information."
+      ]
+    },
+    {
+      "id": "outcome",
+      "title": "Confirmed outcome",
+      "paragraphs": [
+        "The assessment system spans two departments and more than 30 people."
+      ]
+    }
+  ],
+  "flow": [
+    "Weighted criteria",
+    "Assessment rules",
+    "Private bonus data",
+    "Compare & sync"
+  ],
+  "compact": "Weighted criteria for two departments."
+}

@@ -1,4 +1,4 @@
-import {AIRCRAFT,CASE_WINDOWS,aircraftSVG} from './aircraft.mjs';
+import {AIRCRAFT,caseWindowLayout,aircraftSVG} from './aircraft.mjs';
 export const STROKE=1.5;
 export const S4_TIMING=Object.freeze({start:5.85,previousEnd:10,ratio:.9});
 const s4End=S4_TIMING.start+(S4_TIMING.previousEnd-S4_TIMING.start)*S4_TIMING.ratio,shift=s4End-S4_TIMING.previousEnd;
@@ -49,16 +49,16 @@ export function sceneAt(progress,width,height,options={}){
  let scale=departure.scale,center=[...departure.center],target=[0,0,0];
 
  if(u>=PHASE.turn){scale=logMix(topScale,sideScale,turn);center[1]=mix(height*.57,height*.63,turn);}
- // Four full windows and a visible part of each neighbour, even on phones.
- const windowWidth=width/4.8*AIRCRAFT.windowWidth/AIRCRAFT.windowPitch;
- const finalScale=windowWidth/AIRCRAFT.windowWidth;
+ const caseLayout=options.caseLayout||caseWindowLayout(options.caseIds||[],width,height);
+ const windowWidth=AIRCRAFT.windowWidth*caseLayout.scale;
+ const finalScale=caseLayout.count?caseLayout.scale:sideScale;
  const zoom=smoother(interval(u,PHASE.zoom,PHASE.hold));
- if(u>=PHASE.zoom){scale=logMix(sideScale,finalScale,zoom);target=lerp3([0,0,0],[AIRCRAFT.caseX,11,CASE_WINDOWS[0].world[2]],zoom);center[1]=mix(height*.63,height*.55,zoom);}
+ if(u>=PHASE.zoom){scale=logMix(sideScale,finalScale,zoom);target=lerp3([0,0,0],caseLayout.target,zoom);center[1]=mix(height*.63,height*.55,zoom);}
  const engine=[AIRCRAFT.engineX,AIRCRAFT.engineY,AIRCRAFT.engineZ],intake=[AIRCRAFT.intakeX,AIRCRAFT.engineY,AIRCRAFT.engineZ];
  const engineScale=Math.min(width*.68/(2*AIRCRAFT.engineRadius),height*.58/(2*AIRCRAFT.engineRadius));
  const pan=smoother(interval(u,PHASE.pan,PHASE.orbit));
  if(u>=PHASE.pan){
-  target=lerp3([AIRCRAFT.caseX,11,CASE_WINDOWS[0].world[2]],engine,pan);
+  target=lerp3(caseLayout.target,engine,pan);
   // Briefly frame the physical connection before closing onto the nacelle.
   // This remains a cropped fragment, and avoids panning through empty space.
   const midpoint=mix(PHASE.pan,PHASE.orbit,.45),bridgeScale=Math.min(engineScale,width/180,height/150);
@@ -76,7 +76,7 @@ export function sceneAt(progress,width,height,options={}){
  if(u>=PHASE.fade)scale=engineScale*logMix(3.8,6.3,smoother(interval(u,PHASE.fade,END)));
  const fade=1-smooth(interval(u,PHASE.fade,END));
  const project=point=>{const v=point.map((x,i)=>x-target[i]);return[center[0]+dot(axes[0],v)*scale,center[1]-dot(axes[1],v)*scale];};
- const windows=CASE_WINDOWS.map(c=>{const p=project(c.world);return{i:c.i,world:[...c.world],x:p[0],y:p[1],width:AIRCRAFT.windowWidth*scale,height:AIRCRAFT.windowHeight*scale,radius:AIRCRAFT.windowWidth*scale*.38};});
+ const windows=caseLayout.windows.map(c=>{const p=project(c.world);return{id:c.id,i:c.i,world:[...c.world],x:p[0],y:p[1],width:AIRCRAFT.windowWidth*scale,height:AIRCRAFT.windowHeight*scale,radius:AIRCRAFT.windowWidth*scale*.38};});
  const bandHeight=Math.max(164,windowWidth/.76+76),crop=smoother(interval(u,PHASE.zoom,PHASE.handoff));
  let clip={x:0,y:mix(0,center[1]-bandHeight/2,crop),width,height:mix(height,bandHeight,crop)};
  if(u>=PHASE.pan){const reveal=smoother(interval(u,PHASE.pan,mix(PHASE.pan,PHASE.orbit,.45)));clip={x:0,y:mix(center[1]-bandHeight/2,0,reveal),width,height:mix(bandHeight,height,reveal)};}
@@ -85,7 +85,7 @@ export function sceneAt(progress,width,height,options={}){
  const model=u<PHASE.handoff?'overview':'detail';
  const vanishingPoint=project([AIRCRAFT.engineX+30,AIRCRAFT.engineY,AIRCRAFT.engineZ]);
  const fanAngle=3*Math.PI*interval(u,PHASE.approach,END);
- return{u,width,height,mobile,unit,travel,worldTranslate:[0,-travel],intro:introLayout(width,height,unit),departure,state,model,axes,scale,target,center,project,windows,windowWidth,finalScale,engine,engineScale,intake,orbit,yaw,fade,planeAlpha:1,clip,vanishingPoint,fanAngle,caseReady:u>=PHASE.hold&&u<PHASE.pan};
+ return{caseLayout,u,width,height,mobile,unit,travel,worldTranslate:[0,-travel],intro:introLayout(width,height,unit),departure,state,model,axes,scale,target,center,project,windows,windowWidth,finalScale,engine,engineScale,intake,orbit,yaw,fade,planeAlpha:1,clip,vanishingPoint,fanAngle,caseReady:u>=PHASE.hold&&u<PHASE.pan};
 }
 /** Fixed final typography column. Only the external shell interpolates. */
 export function previewRect(_origin,width,height,{headerHeight=0,safeBottom=0}={}){

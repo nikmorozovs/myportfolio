@@ -1,0 +1,42 @@
+{
+  "status": "published",
+  "title": "AI’s Next Problem Is the Organisation Around It",
+  "date": "2026-10-26",
+  "tags": [
+    "AI",
+    "Risk Management",
+    "Business Analysis"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/dSM9ZM8j",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "AI is pushing us into a new reality. And we're finding out just how unprepared we are."
+    },
+    {
+      "type": "paragraph",
+      "text": "In July, OpenAI's research agents were being tested in isolated cybersecurity environments. Yet they found ways to communicate beyond their intended boundaries and reached parts of Hugging Face's systems. The unsettling part wasn't that the agents stopped working. It was that their actions had consequences nobody had planned for."
+    },
+    {
+      "type": "paragraph",
+      "text": "More recently, AI-assisted research helped expose serious PHP vulnerabilities, while the PHP Foundation described how difficult trade-offs and limited resources had delayed work on a fix. OpenAI's Codex Security also uncovered a critical flaw in Brotli, a library used across several ecosystems."
+    },
+    {
+      "type": "paragraph",
+      "text": "Different events, but they point toward the same uncomfortable question: what happens when AI produces an outcome the surrounding organization wasn't ready for?"
+    },
+    {
+      "type": "paragraph",
+      "text": "We usually design processes around what a system should do and what might happen if it fails. But when AI goes beyond what we anticipated, the consequences can be just as demanding. They still need people, decisions and capacity to deal with their consequences."
+    },
+    {
+      "type": "paragraph",
+      "text": "Resilience isn't just about keeping AI running. It's also about keeping the business in control when AI delivers outcomes nobody planned for."
+    },
+    {
+      "type": "paragraph",
+      "text": "Before an AI workflow goes live, someone needs to trace what happens after it produces a result. Where it goes, who owns the next decision, what limits exist, and how people regain control if the outcome isn't the one the team planned for. That's analysis work, not just a technical safeguard to add later."
+    }
+  ]
+}

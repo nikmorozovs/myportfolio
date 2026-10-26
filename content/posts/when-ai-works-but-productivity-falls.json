@@ -1,0 +1,47 @@
+{
+  "status": "published",
+  "title": "When AI Works but Productivity Falls",
+  "date": "2026-10-21",
+  "tags": [
+    "AI",
+    "Process Improvement",
+    "Automation"
+  ],
+  "linkedinUrl": "https://lnkd.in/p/dcaCBcVC",
+  "language": "en",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "You rolled out a successful AI automation to another team. Now explain why they’re less productive than before."
+    },
+    {
+      "type": "paragraph",
+      "text": "Imagine two customer support teams. One uses AI to draft replies to routine requests, freeing agents from repetitive writing. The business rolls the same tool out to another team: similar tickets, identical job titles, the same broad process — receive, investigate, respond. Yet its queue slows down, even though the AI works as intended. But what does \"investigate\" involve, and what must be true before someone can respond?"
+    },
+    {
+      "type": "paragraph",
+      "text": "In the second team, exceptions demand context across systems and careful judgment. Reviewing, correcting, and restoring missing details now outweigh the time saved. Having worked in support, I know how easily those differences disappear in a process map."
+    },
+    {
+      "type": "paragraph",
+      "text": "The assumption that both teams had identical needs produced a solution looking for a problem."
+    },
+    {
+      "type": "paragraph",
+      "text": "Here’s my three-step recipe for avoiding that:"
+    },
+    {
+      "type": "list",
+      "ordered": true,
+      "items": [
+        "Discover: Interview frontline employees, hold two-way Q&A roundtables, shadow their work or let them describe a typical day. Ask open questions, listen without defending the solution, try seeing the work through their eyes.",
+        "Validate: Compare management and employee priorities. Neither is automatically right — check bottlenecks against workflow evidence, task frequency, business goals, and compliance and technical constraints.",
+        "Test: Build test cases covering routine work, exceptions, and judgment calls. Define metrics, run UAT with the team, and measure the whole workflow: time saved, verification, corrections, tool switching, errors, and mental effort."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "You can’t improve someone’s workflow if you don’t understand their work."
+    }
+  ]
+}

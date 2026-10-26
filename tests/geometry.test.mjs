@@ -1,7 +1,9 @@
+import {CASE_WINDOWS,PASSENGER_WINDOWS,getAircraft} from './site-fixture.mjs';
+import {sceneAt} from './site-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sceneAt,previewRect,routeMapSVG,runwayLayout,introLayout,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
-import {AIRCRAFT,CASE_WINDOWS,PASSENGER_WINDOWS,getAircraft,pointVisible} from '../src/aircraft.mjs';
+import {previewRect,routeMapSVG,runwayLayout,introLayout,TIMES,END,WORK,PHASE,STROKE} from '../src/geometry.mjs';
+import {AIRCRAFT,pointVisible} from '../src/aircraft.mjs';
 import {prepareRoute,routePointsAt,pathFromPoints,ROUTE_MOTION} from '../src/route-motion.mjs';
 const sizes=[[320,568],[360,640],[390,844],[568,320],[640,900],[768,1024],[844,390],[1280,720],[1440,900],[1920,1080]];
 const close=(a,b,eps=1e-4)=>assert.ok(Math.abs(a-b)<eps,`${a} differs from ${b}`);
