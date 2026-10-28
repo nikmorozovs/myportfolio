@@ -1,3 +1,4 @@
+import {mountDatePicker} from './date-picker.mjs';
 import {trapDialogFocus} from './dialog-focus.mjs';
 import {defaultState,tagCounts,readQuery,writeQuery,selectPosts,parseDate,displayDate,rememberAndRecommend,normalizeState} from './blog-state.mjs';
 import {archiveResults,filterSummary,postCard,showMore} from './blog-render.mjs';
@@ -17,7 +18,7 @@ if(dataNode){
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
   trigger.addEventListener('click',()=>{resetDraft(state);oldOverflow=document.body.style.overflow;document.body.style.overflow='hidden';dialog.showModal();trigger.setAttribute('aria-expanded','true');});
   form.addEventListener('change',countTags);
-  for(const k of ['from','to']){const text=form.elements[k],calendar=document.querySelector('#'+k+'-calendar');form.querySelector(`[data-calendar="${k}"]`).addEventListener('click',()=>{try{if(calendar.showPicker){calendar.showPicker();return;}}catch{}calendar.classList.toggle('fallback-visible');calendar.tabIndex=0;calendar.focus();});calendar.addEventListener('change',()=>{text.value=displayDate(calendar.value);});text.addEventListener('input',()=>{try{calendar.value=parseDate(text.value);}catch{calendar.value='';}});}
+  for(const k of ['from','to']){const text=form.elements[k],calendar=document.querySelector('#'+k+'-calendar');mountDatePicker(form.querySelector(`[data-calendar="${k}"]`),calendar,text);calendar.addEventListener('change',()=>{text.value=displayDate(calendar.value);});text.addEventListener('input',()=>{try{calendar.value=parseDate(text.value);}catch{calendar.value='';}});}
   form.querySelector('[data-cancel]').addEventListener('click',close);
   form.querySelector('[data-clear]').addEventListener('click',()=>resetDraft({...defaultState(),sort:form.querySelector('[name="sort"]:checked').value}));
   form.addEventListener('submit',event=>{event.preventDefault();const next={tags:[...form.querySelectorAll('[name="tag"]:checked')].map(i=>i.value),sort:form.querySelector('[name="sort"]:checked').value};let valid=true;for(const k of ['from','to']){const input=form.elements[k],error=document.querySelector('#'+k+'-error');error.textContent='';input.removeAttribute('aria-invalid');try{next[k]=parseDate(input.value);}catch(e){error.textContent=e.message;input.setAttribute('aria-invalid','true');valid=false;}}if(valid&&next.from&&next.to&&next.from>next.to){document.querySelector('#to-error').textContent='To must be on or after From.';form.elements.to.setAttribute('aria-invalid','true');valid=false;}if(!valid){form.querySelector('[aria-invalid="true"]').focus();return;}commit(next,true);close();});
