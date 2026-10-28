@@ -1,7 +1,7 @@
 import {mountDatePicker} from './date-picker.mjs';
 import {trapDialogFocus} from './dialog-focus.mjs';
 import {defaultState,tagCounts,readQuery,writeQuery,selectPosts,parseDate,displayDate,rememberAndRecommend,normalizeState} from './blog-state.mjs';
-import {archiveResults,filterSummary,postCard,showMore} from './blog-render.mjs';
+import {archiveResults,filterSummary,postCard} from './blog-render.mjs';
 const dataNode=document.querySelector('#blog-data');
 if(dataNode){
  const {posts,config,current}=JSON.parse(dataNode.textContent),archive=document.querySelector('.blog-archive');
@@ -24,7 +24,7 @@ if(dataNode){
   form.querySelector('[data-cancel]').addEventListener('click',close);
   form.querySelector('[data-clear]').addEventListener('click',()=>resetDraft({...defaultState(),sort:form.querySelector('[name="sort"]:checked').value}));
   form.addEventListener('submit',event=>{event.preventDefault();const next={tags:[...form.querySelectorAll('[name="tag"]:checked')].map(i=>i.value),sort:form.querySelector('[name="sort"]:checked').value};let valid=true;for(const k of ['from','to']){const input=form.elements[k],error=document.querySelector('#'+k+'-error');error.textContent='';input.removeAttribute('aria-invalid');try{next[k]=parseDate(input.value);}catch(e){error.textContent=e.message;input.setAttribute('aria-invalid','true');valid=false;}}if(valid&&next.from&&next.to&&next.from>next.to){document.querySelector('#to-error').textContent='To must be on or after From.';form.elements.to.setAttribute('aria-invalid','true');valid=false;}if(!valid){form.querySelector('[aria-invalid="true"]').focus();return;}commit(next,true);close();});
-  archive.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.hasAttribute('data-reset'))commit(defaultState(),true);if(button.hasAttribute('data-all'))commit({...state,tags:[],from:'',to:''});if(button.hasAttribute('data-tag')){const tag=button.dataset.tag;commit({...state,tags:state.tags.includes(tag)?state.tags.filter(t=>t!==tag):[...state.tags,tag]});}if(button.hasAttribute('data-show-more')){const before=visible;visible+=5;const next=selectPosts(posts,state,{visible});button.insertAdjacentHTML('beforebegin',next.posts.slice(before).map(postCard).join(''));if(!next.hasMore)button.remove();history.replaceState({blogVisible:visible},'');}});
+  archive.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.hasAttribute('data-reset'))commit(defaultState(),true);if(button.hasAttribute('data-all'))commit({...state,tags:[],from:'',to:''});if(button.hasAttribute('data-tag')){const tag=button.dataset.tag;commit({...state,tags:state.tags.includes(tag)?state.tags.filter(t=>t!==tag):[...state.tags,tag]});}if(button.hasAttribute('data-show-more')){const before=visible;visible+=5;const next=selectPosts(posts,state,{visible});button.insertAdjacentHTML('beforebegin',next.posts.slice(before).map(postCard).join(''));if(!next.hasMore){button.remove();if(event.detail===0)results.querySelectorAll('.post-card .text-link')[before]?.focus({preventScroll:true});}history.replaceState({blogVisible:visible},'');}});
   addEventListener('popstate',()=>{visible=history.state?.blogVisible||5;state=readQuery(location.search,tags);render();});render();
  }
 }
