@@ -9,7 +9,7 @@ if(source){
   if(!svg||!network)return;
   svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
   svg.innerHTML=network.edges.map(({i,j},k)=>{const a=network.anchors[i],b=network.anchors[j];return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" opacity="${.43+(k%4)*.09}"/>`;}).join('')+
-   network.anchors.map((a,i)=>`<circle cx="${a.x}" cy="${a.y}" r="${i%5===0?1.7:1.05}" opacity="${.36+(i%4)*.1}"/>`).join('');
+   network.anchors.filter((a,i)=>network.edges.some(edge=>edge.i===i||edge.j===i)).map((a,i)=>`<circle cx="${a.x}" cy="${a.y}" r="${i%5===0?1.7:1.05}" opacity="${.36+(i%4)*.1}"/>`).join('');
  }
  function measureNode(n){
   n.el.classList.remove('selected','secondary');n.el.querySelector('small').hidden=true;
