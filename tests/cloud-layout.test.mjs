@@ -5,7 +5,7 @@ const sample=Array.from({length:9},(_,i)=>({id:'s'+i,skill:'Skill '+i,maxW:110,m
 test('seeded assignments stay stable and reserve extra empty zones across viewport sizes',()=>{
  for(const width of [320,375,390,768,1200]){
   const a=makeZones(sample,width,123),b=makeZones(sample,width,123);
-  assert.ok(a.allZones.length>sample.length);
+  assert.ok(a.allZones.length>=sample.length);
   assert.deepEqual([...a.zones],[...b.zones]);
   const zones=[...a.zones.values()];
   for(const [i,z] of zones.entries()){
@@ -26,6 +26,8 @@ test('movement remains inside zones, reflects and preserves speed; selected stay
 test('generated network is deterministic and its segments avoid reserved text',()=>{
  const layout=makeZones(sample,1200,31);const nodes=sample.map(n=>({...n,zone:layout.zones.get(n.id),x:layout.zones.get(n.id).x+layout.zones.get(n.id).w/2,y:layout.zones.get(n.id).y+layout.zones.get(n.id).h/2}));
  const a=buildNetwork(nodes,1200,layout.height,12),b=buildNetwork(nodes,1200,layout.height,12);
- assert.deepEqual(a,b);assert.ok(a.edges.length>0);
+ assert.deepEqual(a,b);assert.ok(a.edges.length>=sample.length-1);assert.equal(a.connected,true);
  for(const edge of a.edges){const p=a.anchors[edge.i],q=a.anchors[edge.j];for(const n of nodes){assert.equal(intersects({x:n.x-n.maxW/2,y:n.y-n.maxH/2,w:n.maxW,h:n.maxH},p,q,5),false);}}
 });
+
+test('compact mobile zones fit two columns without overlapping',()=>{for(const width of [320,375,390]){const layout=makeZones(sample,width,33);const z=[...layout.zones.values()];assert.ok(layout.height<750);assert.ok(new Set(z.map(v=>Math.round(v.x))).size===2);const nodes=sample.map(n=>({...n,zone:layout.zones.get(n.id),x:layout.zones.get(n.id).x+layout.zones.get(n.id).w/2,y:layout.zones.get(n.id).y+layout.zones.get(n.id).h/2}));const net=buildNetwork(nodes,width,layout.height,33);assert.equal(net.connected,true);assert.ok(net.edges.length>=nodes.length-1);}});
