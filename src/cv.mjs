@@ -50,7 +50,7 @@ if(source){
   network=makeElasticTopology(nodes,width,height,seed+17);renderNetwork();layoutWidth=width;applySelection();
  }
  function choose(n){selected=n;applySelection();paintNetwork();document.querySelector('#skill-announcement').textContent=n?`${n.skill}, ${experienceSince(n.start_date,now)}`:'';}
- function frame(time){raf=0;if(!visible||document.hidden||destroyed||reduced.matches)return;stepZones(nodes,last?(time-last)/1000:0);last=time;elapsed+=last?Math.min(.05,(time-last)/1000):0;paint();paintNetwork();raf=requestAnimationFrame(frame);}
+ function frame(time){raf=0;if(!visible||document.hidden||destroyed||reduced.matches)return;const dt=last?Math.min(.05,(time-last)/1000):0;stepZones(nodes,dt);elapsed+=dt;last=time;paint();paintNetwork();raf=requestAnimationFrame(frame);}
  function start(){if(!raf&&visible&&!document.hidden&&!reduced.matches&&!destroyed){last=0;raf=requestAnimationFrame(frame);}}
  function load(){cancelAnimationFrame(raf);raf=0;selected=null;cloud.replaceChildren();
   svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('skill-network');svg.setAttribute('aria-hidden','true');cloud.append(svg);
