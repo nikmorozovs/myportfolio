@@ -29,7 +29,7 @@ if(source){
   width=cloud.clientWidth;if(!width)return;
   const columns=width<540?2:width<850?2:3, gap=width<540?14:22, pad=width<540?8:20;
   const cell=(width-2*pad-gap*(columns-1))/columns;
-  nodes.forEach(n=>{n.el.style.maxWidth=Math.max(70,cell-12)+'px';measureNode(n);});
+  nodes.forEach(n=>{n.el.style.maxWidth=Math.max(70,cell-28)+'px';measureNode(n);});
   const seed=[...selector.value].reduce((a,c)=>((a*31+c.charCodeAt(0))>>>0),101);
   const layout=makeZones(nodes,width,seed);height=layout.height;cloud.style.height=height+'px';
   const rng=random(seed+29);
