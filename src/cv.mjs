@@ -4,7 +4,7 @@ import {makeElasticTopology,elasticGeometry} from './cloud-elastic.mjs';
 const source=document.querySelector('#cv-data');
 if(source){
  const skills=JSON.parse(source.textContent),now=new Date(),reduced=matchMedia('(prefers-reduced-motion: reduce)'),cloud=document.querySelector('.skill-cloud'),selector=document.querySelector('#skill-category'),enhancement=document.querySelector('.cloud-enhancement');enhancement.hidden=false;
- let nodes=[],selected=null,width=0,height=0,raf=0,last=0,visible=false,destroyed=false,network=null,svg=null,layoutWidth=0,elapsed=0,rootPath=null,branchPaths=[];
+ let nodes=[],selected=null,width=0,height=0,raf=0,last=0,visible=false,destroyed=false,network=null,svg=null,layoutWidth=0,elapsed=0,rootPath=null,branchPaths=[],rootDots=[],branchDots=[];
  const paint=()=>nodes.forEach(n=>{n.el.style.transform=`translate(${n.x-n.w/2}px,${n.y-n.h/2}px)`;});
  function renderNetwork(){
   if(!svg||!network)return;
@@ -16,13 +16,17 @@ if(source){
   };
   rootPath=makePath('network-root','.62');
   branchPaths=nodes.map((n,i)=>makePath('network-branch',String(.43+(i%3)*.09)));
+  const circle=(opacity,radius)=>{const el=document.createElementNS('http://www.w3.org/2000/svg','circle');el.setAttribute('opacity',opacity);el.setAttribute('r',radius);svg.append(el);return el;};
+  rootDots=network.roots.map((p,i)=>circle('.42',i%3===0?'1.7':'1.1'));
+  branchDots=nodes.map((n,i)=>circle('.43',i%2===0?'1.5':'1.15'));
   paintNetwork();
  }
  function paintNetwork(){
   if(!network||!rootPath)return;
   const geometry=elasticGeometry(network,nodes,elapsed);
   rootPath.setAttribute('d',geometry.root);
-  geometry.links.forEach((link,i)=>branchPaths[i]?.setAttribute('d',link.d));
+  geometry.links.forEach((link,i)=>{branchPaths[i]?.setAttribute('d',link.d);if(branchDots[i]){branchDots[i].setAttribute('cx',link.via.x);branchDots[i].setAttribute('cy',link.via.y);}});
+  geometry.rootPoints.forEach((p,i)=>{if(rootDots[i]){rootDots[i].setAttribute('cx',p.x);rootDots[i].setAttribute('cy',p.y);}});
  }
  function measureNode(n){
   n.el.classList.remove('selected','secondary');n.el.querySelector('small').hidden=true;
