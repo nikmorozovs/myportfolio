@@ -1,15 +1,32 @@
 import {experienceSince,LEVELS} from './cv-state.mjs';
-import {random,makeZones,stepZones,buildNetwork} from './cloud-layout.mjs';
+import {random,makeZones,stepZones} from './cloud-layout.mjs';
+import {makeElasticTopology,elasticGeometry} from './cloud-elastic.mjs';
 const source=document.querySelector('#cv-data');
 if(source){
  const skills=JSON.parse(source.textContent),now=new Date(),reduced=matchMedia('(prefers-reduced-motion: reduce)'),cloud=document.querySelector('.skill-cloud'),selector=document.querySelector('#skill-category'),enhancement=document.querySelector('.cloud-enhancement');enhancement.hidden=false;
- let nodes=[],selected=null,width=0,height=0,raf=0,last=0,visible=false,destroyed=false,network=null,svg=null,layoutWidth=0;
+ let nodes=[],selected=null,width=0,height=0,raf=0,last=0,visible=false,destroyed=false,network=null,svg=null,layoutWidth=0,elapsed=0,rootPath=null,branchPaths=[],rootDots=[],branchDots=[];
  const paint=()=>nodes.forEach(n=>{n.el.style.transform=`translate(${n.x-n.w/2}px,${n.y-n.h/2}px)`;});
  function renderNetwork(){
   if(!svg||!network)return;
   svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
-  svg.innerHTML=network.edges.map(({i,j},k)=>{const a=network.anchors[i],b=network.anchors[j];return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" opacity="${.43+(k%4)*.09}"/>`;}).join('')+
-   network.anchors.filter((a,i)=>network.edges.some(edge=>edge.i===i||edge.j===i)).map((a,i)=>`<circle cx="${a.x}" cy="${a.y}" r="${i%5===0?1.7:1.05}" opacity="${.36+(i%4)*.1}"/>`).join('');
+  svg.replaceChildren();
+  const makePath=(klass,opacity)=>{
+   const el=document.createElementNS('http://www.w3.org/2000/svg','path');
+   el.setAttribute('class',klass);el.setAttribute('opacity',opacity);el.setAttribute('fill','none');svg.append(el);return el;
+  };
+  rootPath=makePath('network-root','.62');
+  branchPaths=nodes.map((n,i)=>makePath('network-branch',String(.43+(i%3)*.09)));
+  const circle=(opacity,radius)=>{const el=document.createElementNS('http://www.w3.org/2000/svg','circle');el.setAttribute('opacity',opacity);el.setAttribute('r',radius);svg.append(el);return el;};
+  rootDots=network.roots.map((p,i)=>circle('.42',i%3===0?'1.7':'1.1'));
+  branchDots=nodes.map((n,i)=>circle('.43',i%2===0?'1.5':'1.15'));
+  paintNetwork();
+ }
+ function paintNetwork(){
+  if(!network||!rootPath)return;
+  const geometry=elasticGeometry(network,nodes,elapsed);
+  rootPath.setAttribute('d',geometry.root);
+  geometry.links.forEach((link,i)=>{branchPaths[i]?.setAttribute('d',link.d);if(branchDots[i]){branchDots[i].setAttribute('cx',link.via.x);branchDots[i].setAttribute('cy',link.via.y);}});
+  geometry.rootPoints.forEach((p,i)=>{if(rootDots[i]){rootDots[i].setAttribute('cx',p.x);rootDots[i].setAttribute('cy',p.y);}});
  }
  function measureNode(n){
   n.el.classList.remove('selected','secondary');n.el.querySelector('small').hidden=true;
@@ -23,7 +40,7 @@ if(source){
   for(const n of nodes){n.selected=n===selected;n.el.classList.toggle('selected',n.selected);n.el.classList.toggle('secondary',!!selected&&!n.selected);n.el.setAttribute('aria-pressed',String(n.selected));n.el.querySelector('small').hidden=!n.selected;}
   // Retain the centre of each zone even when an active label expands.
   for(const n of nodes){const r=n.el.getBoundingClientRect();n.w=r.width;n.h=r.height;}
-  paint();
+  paint();paintNetwork();
  }
  function place(){
   width=cloud.clientWidth;if(!width)return;
@@ -34,10 +51,10 @@ if(source){
   const layout=makeZones(nodes,width,seed);height=layout.height;cloud.style.height=height+'px';
   const rng=random(seed+29);
   for(const n of nodes){n.zone=layout.zones.get(n.id);n.x=n.zone.x+n.zone.w/2;n.y=n.zone.y+n.zone.h/2;const angle=rng()*Math.PI*2;n.vx=Math.cos(angle)*6;n.vy=Math.sin(angle)*6;n.speed=6;}
-  network=buildNetwork(nodes,width,height,seed+17);renderNetwork();layoutWidth=width;applySelection();
+  network=makeElasticTopology(nodes,width,height,seed+17);renderNetwork();layoutWidth=width;applySelection();
  }
- function choose(n){selected=n;applySelection();document.querySelector('#skill-announcement').textContent=n?`${n.skill}, ${experienceSince(n.start_date,now)}`:'';}
- function frame(time){raf=0;if(!visible||document.hidden||destroyed||reduced.matches)return;stepZones(nodes,last?(time-last)/1000:0);last=time;paint();raf=requestAnimationFrame(frame);}
+ function choose(n){selected=n;applySelection();paintNetwork();document.querySelector('#skill-announcement').textContent=n?`${n.skill}, ${experienceSince(n.start_date,now)}`:'';}
+ function frame(time){raf=0;if(!visible||document.hidden||destroyed||reduced.matches)return;const dt=last?Math.min(.05,(time-last)/1000):0;stepZones(nodes,dt);elapsed+=dt;last=time;paint();paintNetwork();raf=requestAnimationFrame(frame);}
  function start(){if(!raf&&visible&&!document.hidden&&!reduced.matches&&!destroyed){last=0;raf=requestAnimationFrame(frame);}}
  function load(){cancelAnimationFrame(raf);raf=0;selected=null;cloud.replaceChildren();
   svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('skill-network');svg.setAttribute('aria-hidden','true');cloud.append(svg);

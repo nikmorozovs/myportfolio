@@ -61,7 +61,7 @@ try{
   const categories=await page.locator('#skill-category option').allTextContents();for(const category of categories){await page.locator('#skill-category').selectOption(category);await page.locator('.skill-cloud').scrollIntoViewIfNeeded();await page.waitForTimeout(120);const expected=await page.locator('#cv-data').evaluate((e,c)=>JSON.parse(e.textContent).filter(s=>s.category===c).length,category);assert.equal(await page.locator('.floating-skill').count(),expected);assert.ok(await noOverflow());
    const check=await page.locator('.skill-cloud').evaluate(e=>{const area=e.getBoundingClientRect(),boxes=[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect());return boxes.every(b=>b.left>=area.left-1&&b.right<=area.right+1&&b.top>=area.top-1&&b.bottom<=area.bottom+1)&&boxes.every((a,i)=>boxes.slice(i+1).every(b=>a.right<=b.left+1||b.right<=a.left+1||a.bottom<=b.top+1||b.bottom<=a.top+1));});assert.ok(check,`cloud bounds/overlap ${width} ${category}`);
   }
-  if(width===390){for(const [index,category] of [categories[0],categories[Math.floor(categories.length/2)],categories.at(-1)].entries()){await page.locator('#skill-category').selectOption(category);await page.waitForTimeout(100);await page.screenshot({path:path.join(screenshots,`cv-network-category-${index}-390.png`)});const metrics=await page.locator('.skill-network').evaluate(svg=>({edges:svg.querySelectorAll('line').length,nodes:svg.querySelectorAll('circle').length,isolated:[...svg.querySelectorAll('circle')].filter(c=>![...svg.querySelectorAll('line')].some(l=>(l.getAttribute('x1')===c.getAttribute('cx')&&l.getAttribute('y1')===c.getAttribute('cy'))||(l.getAttribute('x2')===c.getAttribute('cx')&&l.getAttribute('y2')===c.getAttribute('cy')))).length}));assert.ok(metrics.edges>0,`no network ${category}`);assert.equal(metrics.isolated,0,`isolated network nodes ${category}`);}}
+  if(width===390){for(const [index,category] of [categories[0],categories[Math.floor(categories.length/2)],categories.at(-1)].entries()){await page.locator('#skill-category').selectOption(category);await page.waitForTimeout(100);await page.screenshot({path:path.join(screenshots,`cv-network-category-${index}-390.png`)});const metrics=await page.locator('.skill-network').evaluate(svg=>({edges:svg.querySelectorAll('path.network-branch[d]').length,root:!!svg.querySelector('path.network-root[d]')}));assert.ok(metrics.edges>0&&metrics.root,`no network ${category}`);}}
   await page.locator('#skill-category').selectOption('Business Analysis & Decision Making');await page.locator('.floating-skill').first().focus();assert.equal(await page.locator('.floating-skill.selected').count(),1);await page.screenshot({path:path.join(screenshots,`cv-selected-${width}.png`),fullPage:true});await page.keyboard.press('Escape');await page.locator('#languages').scrollIntoViewIfNeeded();await page.waitForTimeout(1700);assert.deepEqual(await page.locator('.language-gauge').evaluateAll(gs=>gs.map(g=>g.querySelectorAll('.active').length)),[6,7,5,1]);await page.screenshot({path:path.join(screenshots,`cv-${width}.png`),fullPage:true});
   await page.goto(base+'blog/');await page.locator('[data-advanced]').click();const rect=await page.locator('#advanced-filters').boundingBox();assert.ok(Math.abs(rect.x-(width-rect.width)/2)<2);assert.ok(await noOverflow());await page.screenshot({path:path.join(screenshots,`filters-${width}.png`)});await page.keyboard.press('Escape');
  }
@@ -72,5 +72,27 @@ try{
  const staticContext=await browser.newContext({javaScriptEnabled:false});const staticPage=await staticContext.newPage();await staticPage.goto(base+'cv/');assert.equal(await staticPage.locator('.cv-timeline article').count(),4);assert.equal(await staticPage.locator('.skills-fallback li').count(),64);await staticContext.close();
  for(const ext of ['pdf','docx']){const response=await page.request.get(base+'assets/cv/Nikolajs_Morozovs_CV.'+ext);assert.equal(response.status(),200);assert.deepEqual(await response.body(),await readFile(path.join(root,'public/assets/cv/Nikolajs_Morozovs_CV.'+ext)));}
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'cv/');assert.deepEqual(await page.locator('.language-gauge').evaluateAll(gs=>gs.map(g=>g.querySelectorAll('.active').length)),[6,7,5,1]);
+ // Dynamic network: responsive orientation, animated root, live attachment and reduced motion.
+ for(const width of [320,375,390,768,1024,1440]){
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.setViewportSize({width,height:900});
+  await page.goto(base+'cv/');
+  const root=page.locator('.network-root');
+  await root.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(120);
+  const first=await root.getAttribute('d');
+  await page.waitForTimeout(240);
+  const later=await root.getAttribute('d');
+  assert.notEqual(first,later,'root should animate at '+width);
+  assert.ok(await page.locator('.network-branch').count()>0);
+  assert.ok(await noOverflow(),'network page overflow '+width);
+  await page.screenshot({path:path.join(screenshots,`elastic-${width}.png`)});
+ }
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(base+'cv/');
+ const stableRoot=await page.locator('.network-root').getAttribute('d');
+ await page.waitForTimeout(240);
+ assert.equal(await page.locator('.network-root').getAttribute('d'),stableRoot);
+ await page.emulateMedia({reducedMotion:'no-preference'});
  assert.deepEqual(errors,[]);console.log('PASS: browser filters, validation, history, pagination, reading state, mobile focus and dynamic case navigation.');
 }catch(error){console.error('Browser failure context:',JSON.stringify({url:page.url(),errors,blogPosition:await page.locator('#blog').count()?await page.locator('#blog').evaluate(e=>({top:e.getBoundingClientRect().top,header:document.querySelector('.site-header').getBoundingClientRect().height,scrollPadding:getComputedStyle(document.documentElement).scrollPaddingTop})):null,caseCount:await page.locator('#site-data').count()?await page.locator('#site-data').evaluate(e=>JSON.parse(e.textContent).cases.length):null}));await page.screenshot({path:path.join(screenshots,'failure.png')});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
