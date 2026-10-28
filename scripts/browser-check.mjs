@@ -72,5 +72,27 @@ try{
  const staticContext=await browser.newContext({javaScriptEnabled:false});const staticPage=await staticContext.newPage();await staticPage.goto(base+'cv/');assert.equal(await staticPage.locator('.cv-timeline article').count(),4);assert.equal(await staticPage.locator('.skills-fallback li').count(),64);await staticContext.close();
  for(const ext of ['pdf','docx']){const response=await page.request.get(base+'assets/cv/Nikolajs_Morozovs_CV.'+ext);assert.equal(response.status(),200);assert.deepEqual(await response.body(),await readFile(path.join(root,'public/assets/cv/Nikolajs_Morozovs_CV.'+ext)));}
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'cv/');assert.deepEqual(await page.locator('.language-gauge').evaluateAll(gs=>gs.map(g=>g.querySelectorAll('.active').length)),[6,7,5,1]);
+ // Dynamic network: responsive orientation, animated root, live attachment and reduced motion.
+ for(const width of [320,375,390,768,1024,1440]){
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.setViewportSize({width,height:900});
+  await page.goto(base+'cv/');
+  const root=page.locator('.network-root');
+  await root.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(120);
+  const first=await root.getAttribute('d');
+  await page.waitForTimeout(240);
+  const later=await root.getAttribute('d');
+  assert.notEqual(first,later,'root should animate at '+width);
+  assert.ok(await page.locator('.network-branch').count()>0);
+  assert.ok(await noOverflow(),'network page overflow '+width);
+  await page.screenshot({path:path.join(screenshots,`elastic-${width}.png`)});
+ }
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(base+'cv/');
+ const stableRoot=await page.locator('.network-root').getAttribute('d');
+ await page.waitForTimeout(240);
+ assert.equal(await page.locator('.network-root').getAttribute('d'),stableRoot);
+ await page.emulateMedia({reducedMotion:'no-preference'});
  assert.deepEqual(errors,[]);console.log('PASS: browser filters, validation, history, pagination, reading state, mobile focus and dynamic case navigation.');
 }catch(error){console.error('Browser failure context:',JSON.stringify({url:page.url(),errors,blogPosition:await page.locator('#blog').count()?await page.locator('#blog').evaluate(e=>({top:e.getBoundingClientRect().top,header:document.querySelector('.site-header').getBoundingClientRect().height,scrollPadding:getComputedStyle(document.documentElement).scrollPaddingTop})):null,caseCount:await page.locator('#site-data').count()?await page.locator('#site-data').evaluate(e=>JSON.parse(e.textContent).cases.length):null}));await page.screenshot({path:path.join(screenshots,'failure.png')});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
