@@ -24,7 +24,7 @@ The positioning sentence, competency labels, case names/order, headings, narrati
 | Personal About text | Two labelled Lorem ipsum paragraphs | Approved personal narrative |
 | Recommendation | Explicit pending-selection placeholder, no invented quotation | Approved short excerpt |
 | Attribution | Working attribution from the specification | Confirm alongside the selected excerpt |
-| CV | Link to request-by-email area | Current approved PDF |
+| CV | Complete dedicated CV page and original PDF/DOCX downloads | Supplied approved CV documents |
 | WhatsApp | Non-clickable “Link pending” | Verified destination |
 | Positioning, skills and titles | Meaningful working English copy | Optional editorial corrections |
 

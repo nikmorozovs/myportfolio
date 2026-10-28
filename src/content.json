@@ -279,11 +279,7 @@
     },
     "cv": {
       "title": "Looking for my CV?",
-      "text": "The updated download will be added here.",
-      "label": "Request by email",
-      "subject": "CV request",
-      "href": null,
-      "download": false
+      "href": "/myportfolio/cv/"
     }
   },
   "footer": {
@@ -315,7 +311,5 @@
     },
     "workLink": "Explore selected work"
   },
-  "blog": {
-    "pagination_always_visible": false
-  }
+  "blog": {}
 }

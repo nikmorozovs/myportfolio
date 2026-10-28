@@ -31,7 +31,7 @@ export function validateContent(data){
  const start=data.hero.facts.find(f=>f.id==='experience')?.start;
  if(!start||!Number.isInteger(start.year)||start.year<1||!Number.isInteger(start.month)||start.month<1||start.month>12)throw new Error('Invalid experience start year/month');
  for(const link of data.contact.links)safeURL(link.href);safeURL(data.footer.sourceURL);
- if(data.contact.cv.href)safeURL(data.contact.cv.href);
+ if(data.contact.cv.href&&data.contact.cv.href!=='/myportfolio/cv/')safeURL(data.contact.cv.href);
  if(data.contact.whatsapp.href)safeURL(data.contact.whatsapp.href);
  if(!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(data.contact.email))throw new Error('Invalid contact address');
  return data;
