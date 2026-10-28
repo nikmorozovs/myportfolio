@@ -1,19 +1,61 @@
-import {experienceSince,LEVELS,contain,overlaps,resolveCollisions,stepCloud} from './cv-state.mjs';
+import {experienceSince,LEVELS} from './cv-state.mjs';
+import {random,makeZones,stepZones,buildNetwork} from './cloud-layout.mjs';
 const source=document.querySelector('#cv-data');
 if(source){
  const skills=JSON.parse(source.textContent),now=new Date(),reduced=matchMedia('(prefers-reduced-motion: reduce)'),cloud=document.querySelector('.skill-cloud'),selector=document.querySelector('#skill-category'),enhancement=document.querySelector('.cloud-enhancement');enhancement.hidden=false;
- let nodes=[],selected=null,width=0,height=0,raf=0,last=0,visible=false,destroyed=false;
- const paint=()=>nodes.forEach(n=>{n.el.style.transform=`translate(${n.x-n.w/2+5}px,${n.y-n.h/2+5}px)`;});
- function measure(){width=cloud.clientWidth;for(const n of nodes){n.el.classList.toggle('selected',n===selected);n.el.classList.toggle('secondary',!!selected&&n!==selected);n.el.setAttribute('aria-pressed',String(n===selected));n.el.querySelector('small').hidden=n!==selected;const r=n.el.getBoundingClientRect();n.w=Math.min(width,r.width+10);n.h=r.height+10;n.selected=n===selected;}
- height=Math.max(180,Math.ceil(nodes.reduce((a,n)=>a+n.w*n.h,0)/Math.max(width,1)*3.2),nodes.length*(width<500?66:30));cloud.style.height=height+'px';nodes.forEach(n=>contain(n,width,height));resolveCollisions(nodes,width,height);if(nodes.some((a,i)=>nodes.slice(i+1).some(b=>overlaps(a,b))))place();paint();}
- function place(){const ordered=[...nodes].sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-{High:0,Medium:1,Low:2}[b.priority]));const placed=[];
- for(const n of ordered){let found=false;const preferred={High:.12,Medium:.5,Low:.78}[n.priority],radii=Array.from({length:51},(_,i)=>i/50).sort((a,b)=>Math.abs(a-preferred)-Math.abs(b-preferred));for(const radius of radii){if(found)break;for(let a=0;a<Math.PI*2;a+=.16){const x=width/2+Math.cos(a)*radius*width/2,y=height/2+Math.sin(a)*radius*height/2;n.x=x;n.y=y;if(x<n.w/2||x>width-n.w/2||y<n.h/2||y>height-n.h/2)continue;if(!placed.some(p=>overlaps(n,p))){found=true;break;}}}if(!found){height+=n.h+20;cloud.style.height=height+'px';n.x=width/2;n.y=height-n.h/2-10;}placed.push(n);}}
- function choose(n){selected=n;measure();document.querySelector('#skill-announcement').textContent=n?`${n.skill}, ${experienceSince(n.start_date,now)}`:'';}
- function frame(time){raf=0;if(!visible||document.hidden||destroyed||reduced.matches)return;stepCloud(nodes,width,height,last?(time-last)/1000:0);last=time;paint();raf=requestAnimationFrame(frame);}
+ let nodes=[],selected=null,width=0,height=0,raf=0,last=0,visible=false,destroyed=false,network=null,svg=null,layoutWidth=0;
+ const paint=()=>nodes.forEach(n=>{n.el.style.transform=`translate(${n.x-n.w/2}px,${n.y-n.h/2}px)`;});
+ function renderNetwork(){
+  if(!svg||!network)return;
+  svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+  svg.innerHTML=network.edges.map(({i,j},k)=>{const a=network.anchors[i],b=network.anchors[j];return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" opacity="${.16+(k%4)*.07}"/>`;}).join('')+
+   network.anchors.map((a,i)=>`<circle cx="${a.x}" cy="${a.y}" r="${i%5===0?2:1.2}" opacity="${.25+(i%4)*.12}"/>`).join('');
+ }
+ function measureNode(n){
+  n.el.classList.remove('selected','secondary');n.el.querySelector('small').hidden=true;
+  const base=n.el.getBoundingClientRect();n.w=base.width;n.h=base.height;
+  n.el.classList.add('selected');n.el.querySelector('small').hidden=false;
+  const active=n.el.getBoundingClientRect();
+  n.maxW=Math.max(base.width,active.width)+16;n.maxH=Math.max(base.height,active.height)+16;
+  n.el.classList.remove('selected');n.el.querySelector('small').hidden=true;
+ }
+ function applySelection(){
+  for(const n of nodes){n.selected=n===selected;n.el.classList.toggle('selected',n.selected);n.el.classList.toggle('secondary',!!selected&&!n.selected);n.el.setAttribute('aria-pressed',String(n.selected));n.el.querySelector('small').hidden=!n.selected;}
+  // Retain the centre of each zone even when an active label expands.
+  for(const n of nodes){const r=n.el.getBoundingClientRect();n.w=r.width;n.h=r.height;}
+  paint();
+ }
+ function place(){
+  width=cloud.clientWidth;if(!width)return;
+  nodes.forEach(measureNode);
+  const seed=[...selector.value].reduce((a,c)=>((a*31+c.charCodeAt(0))>>>0),101);
+  const layout=makeZones(nodes,width,seed);height=layout.height;cloud.style.height=height+'px';
+  const rng=random(seed+29);
+  for(const n of nodes){n.zone=layout.zones.get(n.id);n.x=n.zone.x+n.zone.w/2;n.y=n.zone.y+n.zone.h/2;const angle=rng()*Math.PI*2;n.vx=Math.cos(angle)*6;n.vy=Math.sin(angle)*6;n.speed=6;}
+  network=buildNetwork(nodes,width,height,seed+17);renderNetwork();layoutWidth=width;applySelection();
+ }
+ function choose(n){selected=n;applySelection();document.querySelector('#skill-announcement').textContent=n?`${n.skill}, ${experienceSince(n.start_date,now)}`:'';}
+ function frame(time){raf=0;if(!visible||document.hidden||destroyed||reduced.matches)return;stepZones(nodes,last?(time-last)/1000:0);last=time;paint();raf=requestAnimationFrame(frame);}
  function start(){if(!raf&&visible&&!document.hidden&&!reduced.matches&&!destroyed){last=0;raf=requestAnimationFrame(frame);}}
- function load(){cancelAnimationFrame(raf);raf=0;selected=null;cloud.replaceChildren();nodes=skills.filter(s=>s.category===selector.value).map((s,i)=>{const el=document.createElement('button');el.type='button';el.className='floating-skill';el.dataset.priority=s.priority;el.innerHTML='<span></span><small hidden></small>';el.querySelector('span').textContent=s.skill;el.querySelector('small').textContent=experienceSince(s.start_date,now);el.setAttribute('aria-label',`${s.skill}, ${s.priority} priority, ${experienceSince(s.start_date,now)}`);cloud.append(el);const angle=(i+1)*2.39996,n={...s,el,x:0,y:0,vx:Math.cos(angle)*7,vy:Math.sin(angle)*7,speed:7,w:0,h:0};el.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&!selected)choose(n);});el.addEventListener('focus',()=>{if(el.matches(':focus-visible'))choose(n);});el.addEventListener('click',e=>{choose(e.detail===0?n:selected===n?null:n);});el.addEventListener('keydown',e=>{if(e.key==='Escape'){choose(null);el.blur();}});return n;});measure();place();paint();start();}
- cloud.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!selected)return;const r=cloud.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(Math.abs(x-selected.x)>selected.w*.75||Math.abs(y-selected.y)>selected.h*.75)choose(null);});cloud.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')choose(null);});cloud.addEventListener('focusout',e=>{if(!cloud.contains(e.relatedTarget))choose(null);});document.addEventListener('pointerdown',e=>{if(selected&&!selected.el.contains(e.target)&&e.pointerType!=='mouse')choose(null);});selector.addEventListener('change',load);
- const resize=new ResizeObserver(()=>{if(cloud.clientWidth!==width)measure();});resize.observe(cloud);const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)start();else{cancelAnimationFrame(raf);raf=0;last=0;}},{rootMargin:'50px'});observer.observe(cloud);document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0;}else start();});reduced.addEventListener('change',()=>{cancelAnimationFrame(raf);raf=0;start();});document.fonts.ready.then(measure);load();
+ function load(){cancelAnimationFrame(raf);raf=0;selected=null;cloud.replaceChildren();
+  svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('skill-network');svg.setAttribute('aria-hidden','true');cloud.append(svg);
+  nodes=skills.filter(s=>s.category===selector.value).map((s,i)=>{const el=document.createElement('button');el.type='button';el.className='floating-skill';el.dataset.priority=s.priority;el.innerHTML='<span></span><small hidden></small>';el.querySelector('span').textContent=s.skill;el.querySelector('small').textContent=experienceSince(s.start_date,now);el.setAttribute('aria-label',`${s.skill}, ${s.priority} priority, ${experienceSince(s.start_date,now)}`);cloud.append(el);
+   const n={...s,el,x:0,y:0,vx:0,vy:0,speed:6,w:0,h:0,maxW:0,maxH:0,zone:null};
+   el.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&!selected)choose(n);});
+   el.addEventListener('focus',()=>{if(el.matches(':focus-visible'))choose(n);});
+   el.addEventListener('click',e=>{choose(e.detail===0?n:selected===n?null:n);});
+   el.addEventListener('keydown',e=>{if(e.key==='Escape'){choose(null);el.blur();}});return n;
+  });place();start();
+ }
+ cloud.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!selected)return;const r=selected.el.getBoundingClientRect(),pad=Math.max(r.width,r.height)*.25;if(e.clientX<r.left-pad||e.clientX>r.right+pad||e.clientY<r.top-pad||e.clientY>r.bottom+pad)choose(null);});
+ cloud.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')choose(null);});cloud.addEventListener('focusout',e=>{if(!cloud.contains(e.relatedTarget))choose(null);});
+ document.addEventListener('pointerdown',e=>{if(selected&&!selected.el.contains(e.target)&&e.pointerType!=='mouse')choose(null);});
+ selector.addEventListener('change',load);
+ const resize=new ResizeObserver(()=>{if(Math.abs(cloud.clientWidth-layoutWidth)>10)place();});resize.observe(cloud);
+ const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)start();else{cancelAnimationFrame(raf);raf=0;last=0;}},{rootMargin:'50px'});observer.observe(cloud);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0;}else start();});
+ reduced.addEventListener('change',()=>{cancelAnimationFrame(raf);raf=0;start();});
+ document.fonts.ready.then(()=>{if(!destroyed)place();});load();
  const languages=document.querySelector('#languages');let played=false;const gauges=[...languages.querySelectorAll('.language-gauge')];
  function finish(){gauges.forEach(g=>g.querySelectorAll('.gauge-segment').forEach((p,i)=>p.classList.toggle('active',i<LEVELS[g.dataset.level])));}
  if(!reduced.matches){gauges.forEach(g=>g.querySelectorAll('.active').forEach(p=>p.classList.remove('active')));const io=new IntersectionObserver(entries=>{if(played||!entries.some(e=>e.isIntersecting))return;played=true;io.disconnect();const begin=performance.now();function tick(t){const progress=Math.min(1,(t-begin)/1500),eased=1-(1-progress)**3;gauges.forEach(g=>g.querySelectorAll('.gauge-segment').forEach((p,i)=>p.classList.toggle('active',i<Math.floor(eased*LEVELS[g.dataset.level]))));if(progress<1&&!reduced.matches)requestAnimationFrame(tick);else finish();}requestAnimationFrame(tick);},{threshold:.3});io.observe(languages);reduced.addEventListener('change',()=>{if(reduced.matches){played=true;io.disconnect();finish();}});}
