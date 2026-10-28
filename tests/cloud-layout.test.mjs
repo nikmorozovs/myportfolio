@@ -31,3 +31,16 @@ test('generated network is deterministic and its segments avoid reserved text',(
 });
 
 test('compact mobile zones fit two columns without overlapping',()=>{for(const width of [320,375,390]){const layout=makeZones(sample,width,33);const z=[...layout.zones.values()];assert.ok(layout.height<750);assert.ok(new Set(z.map(v=>Math.round(v.x))).size===2);const nodes=sample.map(n=>({...n,zone:layout.zones.get(n.id),x:layout.zones.get(n.id).x+layout.zones.get(n.id).w/2,y:layout.zones.get(n.id).y+layout.zones.get(n.id).h/2}));const net=buildNetwork(nodes,width,layout.height,33);assert.equal(net.connected,true);assert.ok(net.edges.length>=nodes.length-1);}});
+
+test('mobile remains clustered and every category anchor has a backbone',()=>{
+ for(const width of [320,375,390,768,1440])for(const count of [3,5,7]){
+  const data=Array.from({length:count},(_,i)=>({id:'test'+i,skill:'Label '+i,maxW:width<540?98:120,maxH:72}));
+  const layout=makeZones(data,width,99);
+  if(width<540)assert.ok(layout.height<680,'mobile cloud should remain compact');
+  const nodes=data.map(n=>({...n,zone:layout.zones.get(n.id),x:layout.zones.get(n.id).x+layout.zones.get(n.id).w/2,y:layout.zones.get(n.id).y+layout.zones.get(n.id).h/2}));
+  const net=buildNetwork(nodes,width,layout.height,42);
+  assert.equal(net.connected,true,'all skill anchors must be connected');
+  assert.deepEqual(net,buildNetwork(nodes,width,layout.height,42));
+  for(const edge of net.edges){const p=net.anchors[edge.i],q=net.anchors[edge.j];for(const n of nodes){const z=n.zone;assert.equal(intersects({x:z.x+5,y:z.y+5,w:z.w-10,h:z.h-10},p,q,1),false);}}
+ }
+});
