@@ -8,7 +8,7 @@ export function textHTML(value){
  return value.lines.map(escapeHTML).join(` ${br}`);
 }
 /** Preserve editorial line breaks; render the existing final dot exactly once. */
-export function headingHTML(value,accent=''){
+export function headingHTML(value,accent='.'){
  const lines=typeof value==='string'?[value]:[...value.lines],last=lines.length-1;
  const dot=lines[last].endsWith('.')?'.':accent;
  if(dot)lines[last]=lines[last].replace(/\.+$/,'');
@@ -31,13 +31,13 @@ export function validateContent(data){
  const start=data.hero.facts.find(f=>f.id==='experience')?.start;
  if(!start||!Number.isInteger(start.year)||start.year<1||!Number.isInteger(start.month)||start.month<1||start.month>12)throw new Error('Invalid experience start year/month');
  for(const link of data.contact.links)safeURL(link.href);safeURL(data.footer.sourceURL);
- if(data.contact.cv.href)safeURL(data.contact.cv.href);
+ if(data.contact.cv.href&&data.contact.cv.href!=='/myportfolio/cv/')safeURL(data.contact.cv.href);
  if(data.contact.whatsapp.href)safeURL(data.contact.whatsapp.href);
  if(!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(data.contact.email))throw new Error('Invalid contact address');
  return data;
 }
 export const ICON_NAMES=Object.freeze(['chat','quality','data','tool','default']);
-export function directionIcon(direction='diagonal'){const paths={diagonal:'M6 18 18 6M6 6h12v12',left:'m14 6-6 6 6 6M8 12h13',right:'m10 6 6 6-6 6M3 12h13',down:'M12 4v16m-6-6 6 6 6-6',up:'M12 20V4m-6 6 6-6 6 6',menu:'M4 6h16M4 12h16M4 18h16',close:'m6 6 12 12M18 6 6 18',ellipsis:'M4 12h.1M12 12h.1M20 12h.1'};return `<svg class="direction-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[direction]}"/></svg>`;}
+export function directionIcon(direction='diagonal'){const paths={calendar:'M4 5h16v16H4ZM8 3v4M16 3v4M4 10h16',diagonal:'M6 18 18 6M6 6h12v12',left:'m14 6-6 6 6 6M8 12h13',right:'m10 6 6 6-6 6M3 12h13',down:'M12 4v16m-6-6 6 6 6-6',up:'M12 20V4m-6 6 6-6 6 6',menu:'M4 6h16M4 12h16M4 18h16',close:'m6 6 12 12M18 6 6 18',ellipsis:'M4 12h.1M12 12h.1M20 12h.1'};return `<svg class="direction-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[direction]}"/></svg>`;}
 export function icon(name='default') {
   const paths={
     default:'<path d="M12 5h17l9 9v32H12Z"/><path d="M29 5v10h9M19 25h12M19 33h12"/>',

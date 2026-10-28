@@ -10,7 +10,7 @@ for(const file of html){
   if(!source.includes('<html lang="en">'))failures.push(`${file}: missing English language`);
   if((source.match(/<h1[ >]/g)||[]).length!==1)failures.push(`${file}: requires one h1`);
   for(const m of source.matchAll(/\b(?:href|src)="([^"]+)"/g)){
-    let link=m[1];if(/^(https?:|mailto:|data:)/.test(link))continue;
+    let link=m[1];if(/^(https?:|mailto:|tel:|data:)/.test(link))continue;
     const [url,hash]=link.split('#');
     let target=url.startsWith('/myportfolio/')?path.join(root,url.slice('/myportfolio/'.length)):path.resolve(path.dirname(file),url||path.basename(file));
     try{if((await stat(target)).isDirectory())target=path.join(target,'index.html');await stat(target);}
@@ -71,8 +71,9 @@ if(find('about')?.parent!==find('about-track'))failures.push('About must use one
 if(nodes.filter(n=>has(n,'about')).length!==1)failures.push('About content must not be duplicated for the reading hold');
 if(nodes.indexOf(find('contact'))>=nodes.indexOf(find('site-footer')))failures.push('Contact must precede its footer');
 if(stack.length)failures.push('Unclosed home markup');
-const approvedCV=content.contact.cv.href?.startsWith('assets/')?path.join(root,content.contact.cv.href):null;
-if(files.some(x=>/\.(docx|ttf)$/i.test(x)||/\.pdf$/i.test(x)&&x!==approvedCV))failures.push('Unexpected input document or source font in deployment');
+const approvedCV=new Set(['Nikolajs_Morozovs_CV.pdf','Nikolajs_Morozovs_CV.docx'].map(n=>path.join(root,'assets/cv',n)));
+if(files.some(x=>/\.ttf$/i.test(x)||/\.(pdf|docx)$/i.test(x)&&!approvedCV.has(x)))failures.push('Unexpected input document or source font in deployment');
+for(const file of approvedCV){const original=await readFile(new URL('../public/assets/cv/'+path.basename(file),import.meta.url));if(!original.equals(await readFile(file)))failures.push('CV download bytes changed');}
 if(failures.length){console.error(failures.join('\n'));process.exit(1);}
 const bytes=(await Promise.all(files.map(async x=>(await stat(x)).size))).reduce((a,b)=>a+b,0);
 console.log(`PASS: ${html.length} HTML pages, ${checked} local links/assets and ${Math.round(bytes/1024)} KiB static output.`);

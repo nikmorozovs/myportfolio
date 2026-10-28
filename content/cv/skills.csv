@@ -1,0 +1,65 @@
+﻿category,skill,experience_years,start_date,priority
+Agile Methods & Collaboration Tools,Confluence,3,2023-10,высокий
+Agile Methods & Collaboration Tools,Agile / Scrum,3,2023-10,высокий
+Agile Methods & Collaboration Tools,YouTrack,1.5,2025-04,средний
+Agile Methods & Collaboration Tools,Kanban,3,2023-10,средний
+Agile Methods & Collaboration Tools,Waterfall,3,2023-10,средний
+Agile Methods & Collaboration Tools,Asana,3,2023-10,низкий
+Agile Methods & Collaboration Tools,Slack,3,2023-10,низкий
+AI & Workflow Automation,Make.com,3,2023-10,высокий
+AI & Workflow Automation,ChatGPT,3,2023-10,высокий
+AI & Workflow Automation,Gemini,3,2023-10,средний
+AI & Workflow Automation,Claude,1,2025-10,низкий
+Business Analysis & Decision Making,Business Analysis,2,2024-10,высокий
+Business Analysis & Decision Making,Root Cause Analysis,5,2021-10,высокий
+Business Analysis & Decision Making,Analytical Thinking and Problem Solving,7,2019-10,высокий
+Business Analysis & Decision Making,Gap Analysis,3.5,2023-04,средний
+Business Analysis & Decision Making,Cost-Benefit Analysis,1.5,2025-04,средний
+Business Analysis & Decision Making,Options Analysis,1.5,2025-04,низкий
+Data & Performance Analytics,Data analysis,3.5,2023-04,высокий
+Data & Performance Analytics,Google Sheets / Excel,3,2023-10,высокий
+Data & Performance Analytics,KPI Analysis,3.5,2023-04,высокий
+Data & Performance Analytics,SQL,0.5,2026-04,средний
+Data & Performance Analytics,Performance Metrics,3.5,2023-04,средний
+Data & Performance Analytics,KPI Implementation,3.5,2023-04,средний
+Data & Performance Analytics,Performance Management,3.5,2023-04,низкий
+Documentation & Learning,Technical Writing,5,2021-10,высокий
+Documentation & Learning,Documentation,5,2021-10,высокий
+Documentation & Learning,Knowledge Management,5,2021-10,средний
+Documentation & Learning,Employee Training,3.5,2023-04,средний
+Documentation & Learning,Onboarding & Adaptation,2,2024-10,низкий
+Documentation & Learning,Curriculum Design,3.5,2023-04,низкий
+Leadership & Stakeholder Communication,Stakeholder Management,3,2023-10,высокий
+Leadership & Stakeholder Communication,Internal Communication,7,2019-10,высокий
+Leadership & Stakeholder Communication,Facilitation,3.5,2023-04,высокий
+Leadership & Stakeholder Communication,Mentoring,5,2021-10,средний
+Leadership & Stakeholder Communication,Team Development and Coaching,3.5,2023-04,низкий
+Process Analysis & Optimization,Business Process Analysis,3,2023-10,высокий
+Process Analysis & Optimization,Process Optimization,5,2021-10,высокий
+Process Analysis & Optimization,Process Documentation,5,2021-10,средний
+Process Analysis & Optimization,Process Approach AS IS / TO BE,2,2024-10,низкий
+Project & Delivery Management,SDLC,3,2023-10,высокий
+Project & Delivery Management,Project & Workflow Management,3,2023-10,высокий
+Project & Delivery Management,Software Implementation,2,2024-10,средний
+Project & Delivery Management,Roadmap Planning,1.5,2025-04,средний
+Project & Delivery Management,Project Planning,2,2024-10,средний
+Project & Delivery Management,IT Budgeting & Cost Optimization,1.5,2025-04,низкий
+Requirements Discovery & Management,Requirement Analysis,2,2024-10,высокий
+Requirements Discovery & Management,Requirements Gathering,2,2024-10,высокий
+Requirements Discovery & Management,Requirements Management,2,2024-10,высокий
+Requirements Discovery & Management,Requirements Specification,2,2024-10,средний
+Requirements Discovery & Management,Business Rules,2,2024-10,средний
+Requirements Discovery & Management,Stakeholder Interviews,1.5,2025-04,низкий
+Requirements Modeling & Artifacts,User Story,1.5,2025-04,высокий
+Requirements Modeling & Artifacts,Acceptance Criteria,1.5,2025-04,высокий
+Requirements Modeling & Artifacts,Use Cases,1.5,2025-04,высокий
+Requirements Modeling & Artifacts,Requirements Traceability Matrix (RTM),1.5,2025-04,средний
+Requirements Modeling & Artifacts,BRD,1.5,2025-04,средний
+Requirements Modeling & Artifacts,SRS,1.5,2025-04,низкий
+"Testing, Debugging & Support",User Acceptance Testing (UAT),1.5,2025-04,высокий
+"Testing, Debugging & Support",Bug Reporting,3.5,2023-04,высокий
+"Testing, Debugging & Support",Troubleshooting,7,2019-10,высокий
+"Testing, Debugging & Support",Test Planning,1.5,2025-04,средний
+"Testing, Debugging & Support",Chrome DevTools,3,2023-10,средний
+"Testing, Debugging & Support",Technical Support,7,2019-10,низкий
+"Testing, Debugging & Support",Customer Support,7,2019-10,низкий
