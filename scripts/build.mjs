@@ -1,3 +1,5 @@
+import {parseSkills} from './skills-loader.mjs';
+import {cvContent} from '../src/cv-render.mjs';
 import {loadCollections} from './content-loader.mjs';
 import {blogPreview,archiveControls,archiveResults,articleContent} from '../src/blog-render.mjs';
 import {defaultState,selectPosts} from '../src/blog-state.mjs';
@@ -10,6 +12,7 @@ import {sceneAt,sceneSVG,standaloneSVG,PHASE} from '../src/geometry.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 export async function buildSite({contentFile=path.join(root,'src/content.json'),outputDirectory=path.join(root,'dist'),contentDirectory=path.join(root,'content')}={}){
  const collections=await loadCollections(contentDirectory);
+ const cv=JSON.parse(await readFile(path.join(root,'content/cv/profile.json'),'utf8')),skills= parseSkills(await readFile(path.join(root,'content/cv/skills.csv'),'utf8'));
  const data=validateContent({...JSON.parse(await readFile(contentFile,'utf8')),...collections}),out=outputDirectory,{identity:I,ui:U,cases,posts,casePage:C}=data;
  const caseIds=cases.map(c=>c.id);caseWindowLayout(caseIds);
  const buildDate=new Date(),experience=data.hero.facts.find(f=>f.id==='experience');
@@ -22,7 +25,7 @@ export async function buildSite({contentFile=path.join(root,'src/content.json'),
  function head(title,description,base='./'){
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F6F5F0"><meta name="description" content="${e(description)}"><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(description)}"><meta property="og:type" content="website"><meta name="color-scheme" content="light"><title>${e(title)}</title><link rel="icon" href="${base}assets/favicon-nm-v3.svg" type="image/svg+xml"><link rel="preload" href="${base}assets/fonts/onest-latin.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="${base}assets/fonts/unbounded-latin.woff" as="font" type="font/woff" crossorigin><link rel="stylesheet" href="${base}assets/style.css"><link rel="stylesheet" href="${base}assets/scene.css"><script type="module" src="${base}assets/app.mjs"></script><script type="module" src="${base}assets/mobile-nav.mjs"></script><script type="module" src="${base}assets/blog.mjs"></script></head>`;
  }
- function header(base='./',home=true){const links=data.navigation.items.map(n=>`<a href="${home?'':'/myportfolio/'}#${e(n.id)}"${n.id==='cv'?' class="cv-nav"':''}>${e(n.label)}${n.id==='cv'?` ${arrow}`:''}</a>`).join(' ');return `<a class="skip-link" href="#main">${e(data.navigation.skip)}</a>
+ function header(base='./',home=true){const links=data.navigation.items.map(n=>`<a href="${n.id==='cv'?'/myportfolio/cv/':(home?'':'/myportfolio/')+'#'+e(n.id)}"${n.id==='cv'?' class="cv-nav"':''}>${e(n.label)}${n.id==='cv'?` ${arrow}`:''}</a>`).join(' ');return `<a class="skip-link" href="#main">${e(data.navigation.skip)}</a>
   <header class="site-header"><div class="header-surface" aria-hidden="true"></div><div class="header-inner">
    <a class="brand" href="${home?'#top':base}" aria-label="${e(data.navigation.homeLabel)}"><span class="brand-mark">${mark}</span><span class="brand-detail">${e(name)} <br><span>${e(I.role)}</span></span></a>
    <nav class="desktop-nav" aria-label="${e(data.navigation.label)}">${links}</nav><button type="button" class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu">${directionIcon('menu')}</button>
@@ -39,7 +42,7 @@ export async function buildSite({contentFile=path.join(root,'src/content.json'),
   <h2 class="accent-heading" id="contact-title">${headingHTML(c.title)}</h2>
   <a class="email-link" href="mailto:${e(c.email)}">${e(c.email)} ${arrow}</a>
   <div class="contact-bottom"><div class="socials">${c.links.map(l=>`<a href="${safeURL(l.href)}" target="_blank" rel="noopener noreferrer">${e(l.label)} ${arrow}</a>`).join(' ')} ${c.whatsapp.href?`<a href="${safeURL(c.whatsapp.href)}" target="_blank" rel="noopener noreferrer">${e(c.whatsapp.label)} ${arrow}</a>`:`<span class="pending-link" title="${e(c.whatsapp.hint)}">${e(c.whatsapp.label)} <span>${e(c.whatsapp.pending)}</span></span>`}</div>
-   <div class="cv-note" id="cv"><p>${e(c.cv.title)}</p> <span>${e(c.cv.text)}</span> <a href="${c.cv.href?safeURL(c.cv.href):`mailto:${e(c.email)}?subject=${e(encodeURIComponent(c.cv.subject))}`}"${c.cv.download?' download':''}>${e(c.cv.label)} ${arrow}</a></div></div>
+   <div class="cv-note"><a href="/myportfolio/cv/">Looking for my CV? ${arrow}</a></div></div>
  </section>`;}
  const initial=sceneSVG(sceneAt(0,1440,900,{caseIds})),a=data.about,r=data.recommendation,k=data.keyViews;
  const runtime=JSON.stringify({ui:U,scenes:data.scenes,experience,competencies:data.competencies,cases}).replaceAll('<','\\u003c');
@@ -71,19 +74,21 @@ export async function buildSite({contentFile=path.join(root,'src/content.json'),
   const dir=path.join(out,'cases',c.slug);await mkdir(dir,{recursive:true});
   const title=formatText(data.seo.caseTitle,{name,project:c.short});
   const page=`${head(title,c.summary,'../../')}<body id="top" data-page="case">${header('../../',false)}<main class="case-page section-wrap" id="main"><a class="back-link" href="../../#work" data-return>${back} ${e(C.back)}</a>
-   <section class="case-hero"><div class="case-hero-meta"><span class="eyebrow">${e(C.prefix)} ${e(c.number)}</span> <span>${e(c.category)}</span></div><h1>${t(c.title)}</h1><p class="case-lead">${e(c.summary)}</p><div class="case-summary"><div><span class="eyebrow">${e(C.scope)}</span> <strong>${e(c.scope)}</strong> <span>${e(c.scopeLabel)}</span></div><div><span class="eyebrow">${e(C.contribution)}</span> <p>${e(c.contribution)}</p></div><div class="case-hero-icon">${icon(c.icon)}</div></div></section>
+   <section class="case-hero"><div class="case-hero-meta"><span class="eyebrow">${e(C.prefix)} ${e(c.number)}</span> <span>${e(c.category)}</span></div><h1 class="accent-heading page-title">${headingHTML(c.title)}</h1><p class="case-lead">${e(c.summary)}</p><div class="case-summary"><div><span class="eyebrow">${e(C.scope)}</span> <strong>${e(c.scope)}</strong> <span>${e(c.scopeLabel)}</span></div><div><span class="eyebrow">${e(C.contribution)}</span> <p>${e(c.contribution)}</p></div><div class="case-hero-icon">${icon(c.icon)}</div></div></section>
    <div class="case-reading"><aside class="case-toc"><span class="eyebrow">${e(C.contents)}</span><nav aria-label="${e(C.contentsLabel)}">${c.sections.map((s,i)=>`<a href="#section-${i+1}">${e(s.title)}</a>`).join(' ')}</nav></aside><div class="case-prose">${c.sections.map((s,i)=>`<section id="section-${i+1}"><span class="eyebrow">0${i+1}</span><h2>${t(s.title)}</h2>${s.paragraphs.map(p=>`<p>${t(p)}</p>`).join(' ')}${i===Math.min(2,c.sections.length-1)&&c.flow.length?diagram(c):''}</section>`).join(' ')}</div></div>
-   ${cases.length>1?`<section class="more-cases"><span class="eyebrow">${e(C.moreEyebrow)}</span><h2>${t(C.moreTitle)}</h2><div>${[...cases.slice(cases.indexOf(c)+1),...cases.slice(0,cases.indexOf(c))].slice(0,3).map(x=>`<a href="../${e(x.slug)}/"><span>${e(x.number)}</span> <h3>${e(x.short)}</h3> ${arrow}</a>`).join(' ')}</div><a class="text-link" href="../../#work" data-return>${e(C.return)} ${back}</a></section>`:''}</main>${footer()}</body></html>`;
+   <nav class="article-chronology" aria-label="Case navigation">${cases.indexOf(c)>0?`<a href="../${cases[cases.indexOf(c)-1].slug}/">${back}<span>Previous case<strong>${e(cases[cases.indexOf(c)-1].short)}</strong></span></a>`:'<span class="inactive">No previous case</span>'}${cases.indexOf(c)<cases.length-1?`<a href="../${cases[cases.indexOf(c)+1].slug}/"><span>Next case<strong>${e(cases[cases.indexOf(c)+1].short)}</strong></span>${directionIcon('right')}</a>`:'<span class="inactive">No next case</span>'}</nav><a class="text-link" href="../../#work" data-return>${e(C.return)} ${back}</a></main>${footer()}</body></html>`;
   await writeFile(path.join(dir,'index.html'),page);
  }
  const blogData=current=>`<script type="application/json" id="blog-data">${JSON.stringify({posts:posts.map(({body,...p})=>p),config:data.blog||{},current}).replaceAll('<','\\u003c')}</script>`;
  await mkdir(path.join(out,'blog'),{recursive:true});
  await writeFile(path.join(out,'blog/index.html'),`${head(`Blog — ${name}`,'Articles and reflections.','../')}<body id="top" data-page="blog">${header('../',false)}<main id="main" class="blog-archive section-wrap"><h1 id="archive-title" tabindex="-1" class="accent-heading">Blog<span class="heading-dot">.</span></h1>${archiveControls(posts)}<div class="archive-results">${archiveResults(selectPosts(posts,defaultState(),data.blog))}</div></main>${footer()}${blogData(null)}</body></html>`);
  for(const post of posts){const dir=path.join(out,'blog',post.id);await mkdir(dir,{recursive:true});await writeFile(path.join(dir,'index.html'),`${head(`${post.title} — ${name}`,post.excerpt,'../../')}<body id="top" data-page="article">${header('../../',false)}<main id="main" class="article-page section-wrap">${articleContent(post,posts,name)}</main>${footer()}${blogData(post.id)}</body></html>`);}
+ await mkdir(path.join(out,'cv'),{recursive:true});
+ await writeFile(path.join(out,'cv/index.html'),`${head(`CV — ${name}`,cv.PROFILE[0],'../')}<body id="top" data-page="cv">${header('../',false)}<main id="main" class="cv-page section-wrap">${cvContent(cv,skills)}</main>${footer()}<script type="application/json" id="cv-data">${JSON.stringify(skills).replaceAll('<','\\u003c')}</script><script type="module" src="../assets/cv.mjs"></script></body></html>`);
  const n=data.notFound;
  await writeFile(path.join(out,'404.html'),`${head(fmt(n.title),n.description,'/myportfolio/')}<body id="top">${header('/myportfolio/',false)}<main class="not-found section-wrap" id="main"><p class="eyebrow">${e(n.eyebrow)}</p><h1>${t(n.heading)}</h1><a class="text-link" href="/myportfolio/#work">${e(n.workLink)} ${arrow}</a></main></body></html>`);
  await writeFile(path.join(out,'.nojekyll'),'');
  for(const [name,u]of [['top-view',PHASE.turn],['side-view',PHASE.zoom],['engine-view',PHASE.approach]])await writeFile(path.join(out,'assets',`${name}.svg`),standaloneSVG(sceneAt(u,640,480,{caseIds})));
- return{pages:cases.length+posts.length+3,outputDirectory:out};
+ return{pages:cases.length+posts.length+4,outputDirectory:out};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){await buildSite();console.log('Built static pages from validated case and article JSON collections.');}

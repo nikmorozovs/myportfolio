@@ -86,7 +86,7 @@ function reset(){
 function failed(error){reset();root.classList.add('scene-error');console.warn('The static portfolio remains available.',error);}
 function measure(preserve=false){
  const oldW=w,oldH=h,old=target,wasNavigating=!!scrollNav.active;
- w=root.clientWidth;h=Math.round(globalThis.visualViewport?.scale===1?visualViewport.height:innerHeight);
+ w=root.clientWidth;h=Math.round(innerHeight);
  const orientation=Math.abs(w-oldW)>40||Math.abs(h-oldH)>200;
  if(!basisHeight||orientation)basisHeight=h;
  unit=scrollUnit(w,basisHeight);
@@ -122,7 +122,7 @@ $$('a[href^="#"]').forEach(link=>link.addEventListener('click',event=>{
  event.preventDefault();if(location.hash!==hash)history.pushState(null,'',hash);scrollNav.go(id);
 }));
 addEventListener('scroll',queue,{passive:true});
-const resized=()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{try{measure(true);}catch(error){failed(error);}},100);};
+const resized=()=>{const zoomed=!!globalThis.visualViewport&&visualViewport.scale>1.05;root.classList.toggle('viewport-zoomed',zoomed);if(zoomed)return;if(w===root.clientWidth&&h===Math.round(innerHeight)){queue();return;}clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{try{measure(true);}catch(error){failed(error);}},100);};
 addEventListener('resize',resized,{passive:true});globalThis.visualViewport?.addEventListener('resize',resized,{passive:true});
 addEventListener('pageshow',event=>{if(event.persisted)measure();queue();});
 addEventListener('hashchange',()=>{if(location.hash)scrollNav.go(decodeURIComponent(location.hash.slice(1)),{instant:true,focus:false});});

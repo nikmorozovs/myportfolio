@@ -1,0 +1,64 @@
+{
+  "identity": [
+    "NIKOLAJS MOROZOVS",
+    "Business Analyst | Process Improvement | Process Analysis and Automation",
+    "Dortmund, Germany | Open to remote roles | EU citizen | No visa sponsorship required",
+    "+371 29612880 | nikmorozovs@icloud.com",
+    "linkedin.com/in/nikmorozovs | WhatsApp/Telegram: @nikmorozovs"
+  ],
+  "PROFILE": [
+    "Business Analyst for internal IT systems and support operations, from solution selection and requirements to release planning, root cause analysis and automation. Draws on 7 years across customer support, quality and process improvement to translate operational needs into requirements for developers and vendors. Track record includes operational improvements for more than 80 customer-facing employees and a quality assessment system that lets managers compare performance across teams, covering 2 departments and more than 30 people. Understands the problem before designing the solution, and stays involved through implementation and user adoption."
+  ],
+  "CORE SKILLS": [
+    "Requirements elicitation and prioritisation; AS-IS / TO-BE analysis; process mapping; gap analysis; root cause analysis; options and cost-benefit analysis; total cost of ownership (TCO) analysis; usage-based cost modelling; roadmap planning; business rules; business and software requirements documentation (BRD/SRS); use cases; user stories and acceptance criteria; requirements traceability; test planning and user acceptance testing (UAT); release planning (acceptance and stop criteria, rollback); SOP and troubleshooting documentation; stakeholder management; vendor communication."
+  ],
+  "PROFESSIONAL EXPERIENCE": [
+    "Business Analyst | T-1000, Riga",
+    "02/2025 - Present",
+    "Drove the support chat integration project from reassessment: assessed alternatives against business and technical requirements, selected Chatwoot as the best fit and secured stakeholder agreement; proposed self-hosting to overcome regional availability limitations.",
+    "Documented requirements and developer tasks; planned the release with acceptance and stop criteria and rollback procedures; coordinated the pilot as a regional canary release and used its findings to identify further refinements.",
+    "Investigated a recurring data exchange defect between a client's internal system and an external payment system: compared successful and unsuccessful records and traced the cause to a workflow sequencing issue. Developers used the findings to redesign the process, eliminating the defect and the need for related manual corrections.",
+    "Developed a versatile internal tool for payment presets, used daily by operational teams and management and available to more than 80 employees; automated data updates that previously required substantial manual work.",
+    "Designed improvements to internal tools, including expanded logging of a broad range of user actions relevant to customer support; implemented by developers and used by employees daily.",
+    "Run AS-IS / TO-BE and gap analysis, then elicit and prioritise requirements through stakeholder interviews and workshops; translate them into user stories and acceptance criteria, clarifying rules, data requirements and edge cases.",
+    "Review requirements with developers and validate implemented business logic; maintain requirements traceability, plan testing and coordinate UAT, configuration and rollout, supporting users through onboarding and adoption.",
+    "Develop workflow automations and spreadsheet-based tools for request handoffs, notifications, workforce management reporting and converting support requests into bug reports; established a release-notes process and expanded it into sprint digests for a wider internal audience.",
+    "Quality Coach | T-1000, Riga",
+    "09/2023 - 02/2025",
+    "Initiated and implemented a Google Sheets system for quality assessment and performance reporting across 2 departments with more than 15 employees each, including an English version for Asian markets.",
+    "Defined weighted assessment criteria and business rules, secured stakeholder agreement and supported onboarding; the system keeps individual bonus information private and synchronises data automatically, letting managers compare performance over time and across teams.",
+    "Authored more than 20 SOPs and troubleshooting guides based on own investigations and process analysis; also introduced how-to articles to support agents at different technical levels.",
+    "Reviewed customer support interactions, identified performance gaps and delivered individual coaching, workshops and targeted feedback.",
+    "Designed and delivered training academies, from curriculum development through onboarding and follow-up coaching, covering support processes and practical technical skills.",
+    "Supported the department head with workflow analysis and maintained procedural guidance and training materials to improve consistency across the team.",
+    "Built and continuously maintained a multilingual library of prepared responses.",
+    "Introduced a structured process for addressing performance gaps, including individual performance improvement plans (PIP).",
+    "Quality Coach | Webhelp, Riga",
+    "11/2022 - 07/2023",
+    "Evaluated support interaction quality and coached advisors through case reviews, observation, feedback and practical demonstrations; worked with Quality Managers to analyse individual and programme-level performance, identify recurring gaps and deliver targeted training and workshops.",
+    "Senior Technical Customer Support | Webhelp, Riga",
+    "07/2019 - 11/2022 (Technical Customer Support 07/2019 - 04/2021; Senior from 04/2021)",
+    "Provided outsourced technical support in English and Russian for devices running iOS, iPadOS, watchOS and macOS, related peripherals, applications and digital services.",
+    "Managed complex technical escalations in proprietary case-management systems and maintained case ownership through resolution; met service KPIs and shared troubleshooting knowledge through mentoring and experience-sharing sessions for less experienced advisors."
+  ],
+  "TOOLS AND TECHNICAL SKILLS": [
+    "Spreadsheets and automation: Google Sheets (advanced formulas, data imports, dashboards, scripted workflows); Make, Zapier, Slack Workflows.",
+    "Project and documentation tools: Asana, YouTrack, Confluence, Jira (coursework).",
+    "Support platforms: Chatwoot, Intercom. Browser DevTools: network requests and transmitted data.",
+    "Delivery: Scrum, Kanban, Waterfall and hybrid approaches; software development life cycle (SDLC).",
+    "SQL: basic knowledge (SQLBolt); ongoing professional development.",
+    "AI-assisted analysis and documentation: ChatGPT (daily use), Claude, Gemini; used for reviewing analysis from alternative perspectives, identifying gaps and contradictions, structuring plans and drafts, improving document clarity, and developing and debugging formulas and scripts."
+  ],
+  "EDUCATION": [
+    "Bachelor's degree in Information Technology | Faculty of Computer Science and Information Technology, Riga Technical University | 2019 - 2023",
+    "High School Education | Riga Zolitude Gymnasium, Riga | 2016 - 2019"
+  ],
+  "CERTIFICATIONS AND TRAINING": [
+    "Atlassian Agile Project Management - Atlassian University",
+    "Confluence Essentials - Atlassian University",
+    "Business Analysis Basics - Simplilearn"
+  ],
+  "LANGUAGES": [
+    "English - C1 | Russian - C2 | Latvian - B2 | German - A1"
+  ]
+}

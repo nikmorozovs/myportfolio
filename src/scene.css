@@ -121,3 +121,5 @@ html{scroll-behavior:auto}
 
 /* Native deep links and custom navigation use the same responsive header. */
 html{scroll-padding-top:var(--header-height,100px)}
+.contact{min-height:0;padding-bottom:48px}.blog-preview{padding-top:48px}.viewport-zoomed .route-map,.viewport-zoomed .scene,.viewport-zoomed .flight-particles{visibility:hidden}.competency-toggle{text-align:inherit}.skills li:nth-child(-n+2){text-align:left}.skills li:nth-child(n+3){text-align:right}.competency-toggle{max-width:100%;white-space:normal}.motion-ready .skills li{width:18%}
+.motion-ready .skills li{width:auto;max-width:20%}.motion-ready .skills li:nth-child(-n+2){transform:none}.motion-ready .skills li:nth-child(n+3){transform:translateX(-100%)}

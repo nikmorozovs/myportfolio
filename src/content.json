@@ -35,12 +35,12 @@
         "label": "Contact"
       },
       {
-        "id": "cv",
-        "label": "CV"
-      },
-      {
         "id": "blog",
         "label": "Blog"
+      },
+      {
+        "id": "cv",
+        "label": "CV"
       }
     ]
   },
@@ -142,7 +142,8 @@
         "lines": [
           "Business",
           "goals"
-        ]
+        ],
+        "break": "always"
       },
       "paragraphs": [
         "Everyone can agree on what to build and still picture a different version of success. I make those expectations explicit, so we can agree on the outcome and how we’ll know we’ve achieved it."
@@ -154,7 +155,8 @@
         "lines": [
           "User",
           "needs"
-        ]
+        ],
+        "break": "always"
       },
       "paragraphs": [
         "Identical job titles don’t mean identical needs. I discover how your team actually works, including exceptions and judgment calls, before turning those needs into requirements."
@@ -166,7 +168,8 @@
         "lines": [
           "Existing",
           "processes"
-        ]
+        ],
+        "break": "always"
       },
       "paragraphs": [
         "If your process only works when the right person is around, some of its rules may still live in their head. I uncover those unwritten decisions and make them explicit, so the team has a process it can actually follow."
@@ -178,7 +181,8 @@
         "lines": [
           "Solution",
           "constraints"
-        ]
+        ],
+        "break": "always"
       },
       "paragraphs": [
         "A promising solution can look very different once integration, compliance and ongoing maintenance enter the picture. I weigh those constraints alongside the benefits, including whether a simpler alternative could achieve the same goal."
