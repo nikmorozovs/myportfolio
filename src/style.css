@@ -55,3 +55,7 @@
 .floating-skill{z-index:1;border-radius:4px;transition:font-size .16s ease,color .16s ease;padding:5px;white-space:normal}
 .floating-skill:focus-visible{outline:2px solid var(--copper);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.floating-skill{transition:none}}
+
+/* Network connects skill-zone anchors without covering labels. */
+.skill-network{stroke-width:1.35px;overflow:hidden}
+@media(max-width:600px){.skill-network{stroke-width:1.55px}.floating-skill{padding:4px 2px;line-height:1.28}}
