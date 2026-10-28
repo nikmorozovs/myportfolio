@@ -11,25 +11,25 @@ export function intersects(rect,a,b,pad=8){
  return true;
 }
 export function makeZones(items,width,seed=9){
- const rng=random(seed),mobile=width<540,columns=mobile?1:width<850?2:3;
- const gap=mobile?12:22,pad=mobile?10:20;
+ const rng=random(seed),mobile=width<540;
+ // Two mobile columns cut the long vertical strip into a compact cluster.
+ const columns=mobile?2:width<850?2:3;
+ const gap=mobile?14:22,pad=mobile?8:20;
  const cell=(width-2*pad-gap*(columns-1))/columns;
  const maxH=Math.max(0,...items.map(n=>n.maxH));
- const rowH=Math.max(mobile?116:130,maxH+40);
- const rows=Math.ceil((items.length+Math.max(columns,2))/columns);
+ const rowH=Math.max(mobile?88:110,maxH+(mobile?18:30));
+ const rows=Math.ceil(items.length/columns);
  const zones=[];
  for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
-  const stagger=(row%2?1:-1)*Math.min(12,cell*.04);
   const x=pad+col*(cell+gap),y=pad+row*(rowH+gap);
-  zones.push({x,y,w:cell,h:rowH,centerX:x+cell/2+stagger,centerY:y+rowH/2+(rng()-.5)*14});
+  zones.push({x,y,w:cell,h:rowH,centerX:x+cell/2,centerY:y+rowH/2+(rng()-.5)*4});
  }
- const shuffled=[...zones].sort(()=>rng()-.5);
- // Sort shuffle is intentionally replaced by seeded Fisher-Yates for cross-engine stability.
- const available=[...zones];for(let i=available.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
+ const available=[...zones];
+ for(let i=available.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
  const ordered=[...items].sort((a,b)=>b.maxW-a.maxW);
  const result=new Map();
  for(const n of ordered){
-  const index=available.findIndex(z=>z.w>=n.maxW+8&&z.h>=n.maxH+8);
+  const index=available.findIndex(z=>z.w>=n.maxW+4&&z.h>=n.maxH+4);
   if(index<0)throw new Error('Insufficient room for skill '+n.skill);
   result.set(n.id,available.splice(index,1)[0]);
  }
@@ -47,28 +47,82 @@ export function stepZones(items,dt){
  }
 }
 export function skillRects(items){return items.map(n=>({x:n.x-n.maxW/2,y:n.y-n.maxH/2,w:n.maxW,h:n.maxH}));}
+// The protected region covers the full motion envelope, not just the resting text.
+// Routed paths remain clear even as labels move inside their individual zones.
 export function buildNetwork(items,width,height,seed=19){
- const rng=random(seed),anchors=[],rects=skillRects(items);
- for(const n of items){const z=n.zone;if(!z)continue;
-  // Position anchors outside the reserved text envelope, towards zone corners.
-  const sides=[[-1,-1],[1,-1],[-1,1],[1,1]];
-  const s=sides[Math.floor(rng()*sides.length)];
-  anchors.push({x:z.x+z.w/2+s[0]*(z.w/2-5),y:z.y+z.h/2+s[1]*(z.h/2-5),skill:n.id});
+ const rng=random(seed),protectedZones=items.filter(n=>n.zone).map(n=>({
+  x:n.zone.x+5,y:n.zone.y+5,w:n.zone.w-10,h:n.zone.h-10
+ }));
+ const anchors=[],skillAnchors=[];
+ const add=(p,skill=null)=>{const i=anchors.length;anchors.push({...p,skill});return i;};
+ for(const n of items){
+  if(!n.zone)continue;
+  const z=n.zone,corner=Math.floor(rng()*4);
+  const x=corner%2?z.x+z.w-2:z.x+2;
+  const y=corner>1?z.y+z.h-2:z.y+2;
+  skillAnchors.push(add({x,y},n.id));
  }
- for(let i=0;i<Math.max(3,Math.ceil(items.length*.7));i++){
-  for(let attempt=0;attempt<24;attempt++){const a={x:10+rng()*(width-20),y:10+rng()*(height-20),skill:null};
-   if(!rects.some(r=>a.x>=r.x-12&&a.x<=r.x+r.w+12&&a.y>=r.y-12&&a.y<=r.y+r.h+12)){anchors.push(a);break;}
+ // Visibility-graph waypoints sit in gutters and around every protected corner.
+ // A seeded nearest-neighbour backbone is connected before decoration is added.
+ const vertices=[...skillAnchors];
+ for(const r of protectedZones){
+  for(const [x,y] of [[r.x-2,r.y-2],[r.x+r.w+2,r.y-2],
+   [r.x-2,r.y+r.h+2],[r.x+r.w+2,r.y+r.h+2]]){
+   if(x>=1&&x<=width-1&&y>=1&&y<=height-1)vertices.push(add({x,y}));
   }
  }
- const maxDistance=Math.max(125,Math.min(290,width*.38)),edges=[],degree=Array(anchors.length).fill(0);
- const candidates=[];for(let i=0;i<anchors.length;i++)for(let j=i+1;j<anchors.length;j++){
-  const a=anchors[i],b=anchors[j],d=Math.hypot(a.x-b.x,a.y-b.y);
-  if(d>maxDistance||d<24||rects.some(r=>intersects(r,a,b,5)))continue;
-  candidates.push({i,j,d,rank:d*(.8+rng()*.6)});
+ for(const p of [{x:2,y:2},{x:width-2,y:2},{x:2,y:height-2},{x:width-2,y:height-2}])vertices.push(add(p));
+ const clear=(a,b)=>!protectedZones.some(r=>intersects(r,a,b,1));
+ const adj=Array.from({length:anchors.length},()=>[]);
+ for(let i=0;i<anchors.length;i++)for(let j=i+1;j<anchors.length;j++){
+  if(clear(anchors[i],anchors[j])){
+   const cost=Math.hypot(anchors[i].x-anchors[j].x,anchors[i].y-anchors[j].y);
+   if(cost>0){adj[i].push([j,cost]);adj[j].push([i,cost]);}
+  }
  }
- candidates.sort((a,b)=>a.rank-b.rank);
- for(const c of candidates){if(degree[c.i]>=2||degree[c.j]>=2||edges.length>=Math.ceil(anchors.length*.67))continue;
-  if(rng()<.26)continue;edges.push(c);degree[c.i]++;degree[c.j]++;
+ function route(start,end){
+  const dist=Array(anchors.length).fill(Infinity),prev=Array(anchors.length).fill(-1),used=new Set();
+  dist[start]=0;
+  while(used.size<anchors.length){
+   let u=-1;for(let i=0;i<dist.length;i++)if(!used.has(i)&&(u<0||dist[i]<dist[u]))u=i;
+   if(u<0||!Number.isFinite(dist[u]))break;
+   if(u===end)break;used.add(u);
+   for(const [v,cost] of adj[u])if(dist[u]+cost<dist[v]){
+    dist[v]=dist[u]+cost;prev[v]=u;
+   }
+  }
+  if(!Number.isFinite(dist[end]))return null;
+  const path=[end];while(path[0]!==start){path.unshift(prev[path[0]]);}
+  return {path,d:dist[end]};
  }
- return {anchors,edges};
+ const candidates=[];
+ for(let i=0;i<skillAnchors.length;i++)for(let j=i+1;j<skillAnchors.length;j++){
+  const routed=route(skillAnchors[i],skillAnchors[j]);
+  if(routed)candidates.push({i,j,...routed});
+ }
+ candidates.sort((a,b)=>a.d-b.d);
+ const parent=skillAnchors.map((_,i)=>i),find=i=>parent[i]===i?i:(parent[i]=find(parent[i]));
+ const edges=[],edgeSet=new Set(),degree=Array(skillAnchors.length).fill(0);
+ const addRoute=c=>{
+  for(let k=1;k<c.path.length;k++){
+   const i=c.path[k-1],j=c.path[k],key=[Math.min(i,j),Math.max(i,j)].join(':');
+   if(!edgeSet.has(key)){edgeSet.add(key);edges.push({i,j});}
+  }
+  degree[c.i]++;degree[c.j]++;
+ };
+ let joined=0;
+ for(const c of candidates){
+  const a=find(c.i),b=find(c.j);if(a===b)continue;
+  parent[a]=b;addRoute(c);joined++;
+  if(joined===skillAnchors.length-1)break;
+ }
+ // Secondary clustered edges are optional; they cannot destroy backbone connectivity.
+ let extras=0;const budget=Math.min(Math.ceil(skillAnchors.length*.4),4);
+ for(const c of candidates){
+  if(extras>=budget)break;
+  if(degree[c.i]>=3||degree[c.j]>=3||c.path.length>4||rng()<.35)continue;
+  if(c.path.every((v,k)=>k===0||edgeSet.has([Math.min(v,c.path[k-1]),Math.max(v,c.path[k-1])].join(':'))))continue;
+  addRoute(c);extras++;
+ }
+ return {anchors,edges,skillAnchors,connected:joined===skillAnchors.length-1};
 }
