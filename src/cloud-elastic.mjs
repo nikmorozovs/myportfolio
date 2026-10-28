@@ -50,6 +50,13 @@ export function elasticGeometry(topology,items,time=0){
   const p=points.at(-1);return d+` T ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
  };
  const root=smooth(rootPoints),links=[];
+ const rootAt=along=>{
+  const k=Math.max(0,Math.min(rootPoints.length-2,Math.floor((along-10)/(lengthStep||1))));
+  const a=rootPoints[k],b=rootPoints[k+1],axis=vertical?'y':'x';
+  const t=clamp((along-a[axis])/Math.max(.001,b[axis]-a[axis]),0,1);
+  return vertical?{x:a.x+(b.x-a.x)*t,y:along}:{x:along,y:a.y+(b.y-a.y)*t};
+ };
+ const lengthStep=roots.length>1?(roots[1].along-roots[0].along):1;
  for(let i=0;i<items.length;i++){
   const n=items[i],cfg=branches[i],z=n.zone;
   // Current visual dimensions include the experience label on selection.
@@ -58,13 +65,12 @@ export function elasticGeometry(topology,items,time=0){
   if(vertical){
    const dir=cfg.side;
    anchor={x:n.x+dir*w/2,y:n.y};
-   const rootX=corridor+Math.sin(time*.19+cfg.phase)*1.4;
-   attachment={x:rootX,y:clamp(n.y,12,height-12)};
+   attachment=rootAt(clamp(n.y,12,height-12));
    via={x:anchor.x+(attachment.x-anchor.x)*.55,y:n.y+Math.sin(time*.21+cfg.phase)*1.2};
   }else{
    const dir=cfg.side,lane=cfg.lane;
    anchor={x:n.x+dir*w/2,y:n.y};
-   attachment={x:lane,y:corridor+Math.sin(time*.17+cfg.phase)*1.4};
+   attachment=rootAt(lane);
    // The route first enters the side gutter, then follows it toward the root.
    via={x:lane,y:anchor.y};
   }
